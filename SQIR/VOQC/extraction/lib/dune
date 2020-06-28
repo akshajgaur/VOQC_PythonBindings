@@ -1,0 +1,7 @@
+(executable
+  (name voqc)
+  (libraries openQASM zarith unix))
+
+(env
+  (dev
+    (flags (:standard -w -3-39-33))))

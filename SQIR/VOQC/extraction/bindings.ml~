@@ -1,0 +1,17 @@
+open Ctypes
+open Foreign
+open UnitaryListRepresentation
+open Qasm2sqir
+open RzQGateSet
+open Optimize
+
+ type gate_app
+  let union_ftsent : ftsent union typ = structure "FTSENT"
+  let ( -: ) ty label = field struct_ftsent label ty
+  let fts_cycle   = gate_app -: "fts_cycle"
+  let () = seal 
+module Stubs(I: Cstubs_inverted.INTERNAL) = struct
+
+  let get_gate_list = I.internal "get_gate_list" Ctypes.(string @-> returning day_t) get_gate_list
+
+end

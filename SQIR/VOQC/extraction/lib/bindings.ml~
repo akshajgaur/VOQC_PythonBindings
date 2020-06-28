@@ -1,0 +1,22 @@
+open Ctypes
+open UnitaryListRepresentation
+open RzQGateSet
+open Datatypes
+open FMapAVL
+open FSetAVL
+open OrderedTypeEx
+open GateCancellation
+open HadamardReduction
+open NotPropagation
+open RotationMerging
+open Qasm2sqir
+
+let x = Root.create RzQGateSet.coq_RzQ_Unitary
+let y = Root.get x
+Root.release
+
+
+
+module Stubs(I: Cstubs_inverted.INTERNAL) = struct
+ let () = I.internal "get_gate_list"(string @-> returning y) get_gate_list
+end
