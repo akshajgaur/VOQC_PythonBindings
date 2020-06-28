@@ -2,7 +2,7 @@ BUILDDIR=_build
 VPATH=$(BUILDDIR)
 OCAMLDIR=$(shell ocamlopt -where)
 $(shell mkdir -p $(BUILDDIR) $(BUILDDIR)/stub $(BUILDDIR)/lib $(BUILDDIR)/stub_generator $(BUILDDIR)/echo_client $(BUILDDIR)/generated)
-PACKAGES=ctypes.stubs,ctypes.foreign,openQASM,zarith,ppx_deriving,ppx_deriving.enum
+PACKAGES=ctypes.stubs,ctypes.foreign,openQASM,zarith,ppx_deriving,ppx_deriving.enum,ctypes-zarith
 CTYPES=$(shell ocamlfind query ctypes)
 OCAMLDEP=ocamldep
 
