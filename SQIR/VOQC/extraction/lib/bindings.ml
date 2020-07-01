@@ -55,21 +55,36 @@ let set_gates3 (URzQ_CNOT) =
 let d = make final_gates in (setf d gates URzQ_CNOT_temp;d)
 let final_URzQ_CNOT = view ~read:get_gates3~write:set_gates3 final_gates
 
-let get1_gates = function 
-|0 -> final_URzQ_X
-|1 -> final_URzQ_H
-|2 -> final_URzQ_Rz 
-|3 -> final_URzQ_CNOT
-| _ -> assert false
 
-let set1_gates = function 
-|final_URzQ_X -> 0
-|final_URzQ_H -> 1
-|final_URzQ_Rz -> 2
-|final_URzQ_CNOT -> 3
 
-let final_gates12 = view ~read:get1_gates~write:set1_gates int
 
+
+let fin_gates : [`fin_gates] structure typ = structure "fin_gates"
+let xg = field fin_gates "xg" (final_URzQ_X)
+let hg = field fin_gates "hg" (final_URzQ_H)
+let rz = field fin_gates "rzgate" (final_URzQ_Rz)
+let cnot = field fin_gates "cnot" (final_URzQ_CNOT)
+let () = seal fin_gates
+
+(**Connect the App1 Tuple to the App1 Union **)
+let get_tuples2 d = 
+let x = getf d xg in 
+let y = getf d hg in
+let z = getf d rz in
+let w = getf d cnot in
+if x = URzQ_X then x else if y = URzQ_H then y else if w = URzQ_CNOT then w else z
+
+let set_tuples2 x =
+let d = make fin_gates in 
+if x = URzQ_X then 
+    (setf d xg x;d)
+else if x = URzQ_H then 
+    (setf d hg x;d)
+else if x = URzQ_CNOT then 
+    (setf d cnot x;d) 
+else (setf d rz x;d)
+
+let final_gates12= view ~read:get_tuples2~write:set_tuples2 fin_gates
 
 
 
@@ -126,22 +141,29 @@ let final_App3 = view ~read:get_quad~write:set_quad quad
 
 (**Gate Applications**)
 let gate_app : [`gate_app] structure typ = structure "gate_app"
-let app1 = field gate_app "App1" (tuples)
-let app2= field gate_app "App2" (triples)
-let app3= field gate_app "App3" (quad)
+let app1 = field gate_app "App1" (final_App1)
+let app2= field gate_app "App2" (final_App2)
+let app3= field gate_app "App3" (final_App3)
 let () = seal gate_app
 
-let get1_app = function 
-|0 -> final_App1
-|1 -> final_App2
-|2 -> final_App3
+let get1_app d = 
+let p = make tuples in 
+let r = make triples in 
+let y = getf d app1 in
+let z = getf d app2 in
+let w = getf d app3 in
+if y = App1(getf p gate, getf p x) then y else if z = App2(getf r gate1, getf r a, getf r b) then z else y
 
-let set1_app = function 
-|final_App1 -> 0
-|final_App2 -> 1
-|final_App3 -> 2
+let set1_app xy =
+let d = make gate_app in 
+if xy = (getf d app1) then 
+    (setf d app1 xy;d)
+else if xy = getf d app2 then 
+    (setf d app2 xy;d)
+else (setf d app3 xy;d)
 
-let final_help = view ~read:get1_app~write:set1_app int
+
+let final_help = view ~read:get1_app~write:set1_app gate_app
 
 
 (** Tuple of Gate Application list and integer**)
@@ -152,11 +174,10 @@ let () = seal with_qubits
 
 
 
-
 let add a = 
 a+3
 module Stubs(I: Cstubs_inverted.INTERNAL) = struct
- I.enum ["URzQ_H", 0L; "URzQ_X", 1L; "URzQ_Rz", 2L; "URzQ_CNOT", 3L] coq_RzQ_Unitary
+ I.enum ["URzQ_H", 1L; "URzQ_X", 2L; "URzQ_Rz", 3L; "URzQ_CNOT", 4L] coq_RzQ_Unitary
  let () = I.structure final_gates
  let () = I.structure tuples
  let () = I.structure triples
@@ -165,5 +186,6 @@ module Stubs(I: Cstubs_inverted.INTERNAL) = struct
  let () = I.structure with_qubits
  let () = I.internal "add"(int@-> returning int) add
  let () = I.internal "optimize"(final_help @-> returning final_help) optimize
+
 
 end

@@ -1,10 +1,11 @@
 # dune build @install --root .
 # OCAMLPARAM: unset
-# Workspace root: /home/ag/Documents/SQIR/VOQC/extraction/lib
-$ /usr/bin/nproc > /tmp/dune41afce.output 2> /dev/null
+# Workspace root:
+# /home/ag/Documents/VOQC_PythonBindings/SQIR/VOQC/extraction/lib
+$ /usr/bin/nproc > /tmp/dune6aa1f2.output 2> /dev/null
 # Auto-detected concurrency: 1
 # disable binary cache
-$ /usr/bin/ocamlc.opt -config > /tmp/dune615ed2.output
+$ /usr/bin/ocamlc.opt -config > /tmp/dune808ee2.output
 # Dune context:
 #  { name = "default"
 #  ; kind = "default"
@@ -23,13 +24,13 @@ $ /usr/bin/ocamlc.opt -config > /tmp/dune615ed2.output
 #  ; env =
 #      map
 #        { "INSIDE_DUNE" :
-#            "/home/ag/Documents/SQIR/VOQC/extraction/lib/_build/default"
+#            "/home/ag/Documents/VOQC_PythonBindings/SQIR/VOQC/extraction/lib/_build/default"
 #        ; "OCAMLFIND_IGNORE_DUPS_IN" :
-#            "/home/ag/Documents/SQIR/VOQC/extraction/lib/_build/install/default/lib"
+#            "/home/ag/Documents/VOQC_PythonBindings/SQIR/VOQC/extraction/lib/_build/install/default/lib"
 #        ; "OCAMLPATH" :
-#            "/home/ag/Documents/SQIR/VOQC/extraction/lib/_build/install/default/lib"
+#            "/home/ag/Documents/VOQC_PythonBindings/SQIR/VOQC/extraction/lib/_build/install/default/lib"
 #        ; "OCAMLTOP_INCLUDE_PATH" :
-#            "/home/ag/Documents/SQIR/VOQC/extraction/lib/_build/install/default/lib/toplevel"
+#            "/home/ag/Documents/VOQC_PythonBindings/SQIR/VOQC/extraction/lib/_build/install/default/lib/toplevel"
 #        }
 #  ; findlib_path = [ External "/home/ag/.opam/default/lib" ]
 #  ; arch_sixtyfour = true
