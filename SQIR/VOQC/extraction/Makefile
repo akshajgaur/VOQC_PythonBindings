@@ -48,7 +48,6 @@ LIBFILES=$(BUILDDIR)/lib/FSetAVL.cmx      \
 
 CAML_INIT=$(BUILDDIR)/stub/init.o
 
-# The files that we'll generate
 GENERATED=$(BUILDDIR)/generated/money.h \
           $(BUILDDIR)/generated/money.c \
           $(BUILDDIR)/generated/money_bindings.ml
@@ -69,17 +68,17 @@ GENERATOR=$(BUILDDIR)/generate$(EXTEXE)
 
 all: sharedlib
 
-sharedlib: $(BUILDDIR)/libtls$(EXTDLL)
+sharedlib: $(BUILDDIR)/libvoqc$(EXTDLL)
 
 
 ifeq ($(OSTYPE),$(filter $(OSTYPE),Win32 Cygwin))
-$(BUILDDIR)/libtls$(EXTDLL): $(CAML_INIT) $(LIBFILES)
+$(BUILDDIR)/libvoqc$(EXTDLL): $(CAML_INIT) $(LIBFILES)
 	ocamlfind opt -o $@ -linkpkg -output-obj -verbose -package $(PACKAGES) $^
 else ifeq ($(SYSTEM),$(filter $(SYSTEM),macosx))
-$(BUILDDIR)/libtls$(EXTDLL): $(CAML_INIT) $(LIBFILES)
+$(BUILDDIR)/libvoqc$(EXTDLL): $(CAML_INIT) $(LIBFILES)
 	ocamlfind opt -o $@ -linkpkg -runtime-variant _pic -verbose -ccopt -dynamiclib -package $(PACKAGES) $^
 else
-$(BUILDDIR)/libtls$(EXTDLL): $(CAML_INIT) $(LIBFILES)
+$(BUILDDIR)/libvoqc$(EXTDLL): $(CAML_INIT) $(LIBFILES)
 	ocamlfind opt -o $@ -linkpkg -output-obj -runtime-variant _pic -verbose -package $(PACKAGES) $^
 endif
 
