@@ -13,84 +13,69 @@ open RotationMerging
 open Optimize
 open Qasm2sqir
 (**Enums for RzQGateSet for Gates**)
-type t =  | URzQ_H_temp | URzQ_X_temp | URzQ_Rz_temp | URzQ_CNOT_temp [@@deriving enum]
+type t =  | URzQ_H_temp | URzQ_X_temp| URzQ_Rz_temp| URzQ_CNOT_temp [@@deriving enum]
 let of_int64 i = let Some d = of_enum (Int64.to_int i) in d
 let to_int64 d = Int64.of_int (to_enum d)
-let coq_RzQ_Unitary = Ctypes.(typedef (view int64_t ~read:of_int64 ~write:to_int64) "enum coq_RzQ_Unitary")
-
+let coq_RzQ_Unitary1 = Ctypes.(typedef (view int64_t ~read:of_int64 ~write:to_int64) "enum coq_RzQ_Unitary1")
 
 
 (**RzQGateSet Final Structure**)
 let final_gates : [`final_gates] structure typ = structure "final_gates"
-let gates = field final_gates "gates" (coq_RzQ_Unitary)
+let gates = field final_gates "gates" (coq_RzQ_Unitary1)
 let type1 = field final_gates "type1" (MPQ.zarith)
 let () = seal final_gates
 
-let get_gates d = 
-let w =getf d type1 in
-URzQ_Rz w
-let set_gates (URzQ_Rz w) =
-let d = make final_gates in (setf d gates URzQ_Rz_temp;setf d type1 w;d)
-let final_URzQ_Rz = view ~read:get_gates~write:set_gates final_gates
-
-let get_gates1 d = 
+let get_gates d : coq_RzQ_Unitary = 
 let w =getf d gates in
-URzQ_H
-let set_gates1 (URzQ_H) =
-let d = make final_gates in (setf d gates URzQ_H_temp;d)
-let final_URzQ_H = view ~read:get_gates1~write:set_gates1 final_gates
-
-
-let get_gates2 d = 
-let w =getf d gates in
-URzQ_X
-let set_gates2 (URzQ_H) =
-let d = make final_gates in (setf d gates URzQ_X_temp;d)
-let final_URzQ_X = view ~read:get_gates2~write:set_gates2 final_gates
-
-let get_gates3 d = 
-let w =getf d gates in
-URzQ_CNOT
-let set_gates3 (URzQ_CNOT) =
-let d = make final_gates in (setf d gates URzQ_CNOT_temp;d)
-let final_URzQ_CNOT = view ~read:get_gates3~write:set_gates3 final_gates
-
-
-
-
-
-let fin_gates : [`fin_gates] structure typ = structure "fin_gates"
-let xg = field fin_gates "xg" (final_URzQ_X)
-let hg = field fin_gates "hg" (final_URzQ_H)
-let rz = field fin_gates "rzgate" (final_URzQ_Rz)
-let cnot = field fin_gates "cnot" (final_URzQ_CNOT)
-let () = seal fin_gates
-
-(**Connect the App1 Tuple to the App1 Union **)
-let get_tuples2 d = 
-let x = getf d xg in 
-let y = getf d hg in
-let z = getf d rz in
-let w = getf d cnot in
-if x = URzQ_X then x else if y = URzQ_H then y else if w = URzQ_CNOT then w else z
-
-let set_tuples2 x =
-let d = make fin_gates in 
+match w with 
+URzQ_X_temp -> URzQ_X
+|URzQ_H_temp -> URzQ_H
+|URzQ_CNOT_temp -> URzQ_CNOT
+|URzQ_Rz_temp -> (URzQ_Rz (getf d type1))
+let set_gates (x:coq_RzQ_Unitary) =
+let d = make final_gates in
 if x = URzQ_X then 
-    (setf d xg x;d)
+(setf d gates URzQ_X_temp;d)
 else if x = URzQ_H then 
-    (setf d hg x;d)
-else if x = URzQ_CNOT then 
-    (setf d cnot x;d) 
-else (setf d rz x;d)
+(setf d gates URzQ_H_temp;d)
+else if x = URzQ_CNOT then
+(setf d gates URzQ_CNOT_temp;d)
+else 
+(setf d gates URzQ_Rz_temp;setf d type1 (getf d type1);d)
+let coq_RzQ_Unitary = view ~read:get_gates~write:set_gates final_gates
 
-let final_gates12= view ~read:get_tuples2~write:set_tuples2 fin_gates
 
+let back_orig : [`back_orig] structure typ = structure "back_orig"
+let gates1 = field back_orig "gates1" (coq_RzQ_Unitary)
+let () = seal back_orig
+let get_back d u= 
+let w =getf d gates in
 
+match w with 
+URzQ_X_temp -> (setf u gates1 URzQ_X)
+|URzQ_H_temp -> (setf u gates1 URzQ_H)
+|URzQ_CNOT_temp -> (setf u gates1 URzQ_CNOT)
+|URzQ_Rz_temp -> (setf u gates1 (URzQ_Rz(getf d type1)))
+let set_back x =
+let d = make final_gates in 
+let u = make back_orig in 
+let v =getf u gates1 in
+match v with 
+ URzQ_X->(setf d gates URzQ_X_temp;d) 
+|URzQ_H->(setf d gates URzQ_H_temp;d)
+|URzQ_CNOT->(setf d gates URzQ_CNOT_temp;d)
+|URzQ_Rz _ -> (setf d gates URzQ_Rz_temp;d)
+
+let get_orig d = 
+let z =getf d gates1 in
+z
+let set_orig z =
+let d = make back_orig in (setf d gates1 z;d)
+let final_Unitary = view ~read:get_orig~write:set_orig back_orig
 
 (**App1 Tuple**)
 let tuples : [`tuples] structure typ = structure "tuples"
-let gate = field tuples "gate" (final_gates12)
+let gate = field tuples "gate" (final_Unitary)
 let x = field tuples "x" (int)
 let () = seal tuples
 
@@ -105,7 +90,7 @@ let final_App1 = view ~read:get_tuples~write:set_tuples tuples
 
 (**App2 Tuple**)
 let triples : [`triples] structure typ = structure "triples"
-let gate1 = field triples "gate1" (final_gates12)
+let gate1 = field triples "gate1" (final_Unitary)
 let a= field triples "a" (int)
 let b= field triples "b" (int)
 let () = seal triples
@@ -122,7 +107,7 @@ let final_App2 = view ~read:get_triples~write:set_triples triples
 
 (**App3 Tuple**)
 let quad : [`quad] structure typ = structure "quad"
-let gate2 = field quad "gate2" (final_gates12)
+let gate2 = field quad "gate2" (final_Unitary)
 let c= field quad "c" (int)
 let f= field quad "f" (int)
 let e= field quad "e" (int)
@@ -140,11 +125,11 @@ let d = make quad in (setf d gate2 first_quad; setf d c second_quad;setf d f thi
 let final_App3 = view ~read:get_quad~write:set_quad quad
 
 (**Gate Applications**)
-let gate_app : [`gate_app] structure typ = structure "gate_app"
-let app1 = field gate_app "App1" (final_App1)
-let app2= field gate_app "App2" (final_App2)
-let app3= field gate_app "App3" (final_App3)
-let () = seal gate_app
+let gate_app1 : [`gate_app1] union typ = union "gate_app1"
+let app1 = field gate_app1 "App1" (final_App1)
+let app2= field gate_app1 "App2" (final_App2)
+let app3= field gate_app1 "App3" (final_App3)
+let () = seal gate_app1
 
 let get1_app d = 
 let p = make tuples in 
@@ -152,10 +137,10 @@ let r = make triples in
 let y = getf d app1 in
 let z = getf d app2 in
 let w = getf d app3 in
-if y = App1(getf p gate, getf p x) then y else if z = App2(getf r gate1, getf r a, getf r b) then z else y
+if y = App1(getf p gate, getf p x) then y else if z = App2(getf r gate1, getf r a, getf r b) then z else w
 
 let set1_app xy =
-let d = make gate_app in 
+let d = make gate_app1 in 
 if xy = (getf d app1) then 
     (setf d app1 xy;d)
 else if xy = getf d app2 then 
@@ -163,7 +148,7 @@ else if xy = getf d app2 then
 else (setf d app3 xy;d)
 
 
-let final_help = view ~read:get1_app~write:set1_app gate_app
+let gate_app = view ~read:get1_app~write:set1_app gate_app1
 
 
 (** Tuple of Gate Application list and integer**)
@@ -173,19 +158,26 @@ let quibits= field with_qubits "qubits" (int)
 let () = seal with_qubits
 
 
+let optimize1 a = 
+Root.create (optimize((Ctypes.Root.get a: RzQGateSet.RzQGateSet.coq_RzQ_Unitary UnitaryListRepresentation.gate_app
+  list))) |> from_voidp gate_app1
+
+
 
 let add a = 
 a+3
 module Stubs(I: Cstubs_inverted.INTERNAL) = struct
- I.enum ["URzQ_H", 1L; "URzQ_X", 2L; "URzQ_Rz", 3L; "URzQ_CNOT", 4L] coq_RzQ_Unitary
+ I.enum ["URzQ_H", 0L; "URzQ_X", 1L; "URzQ_Rz", 2L; "URzQ_CNOT", 3L] coq_RzQ_Unitary1
  let () = I.structure final_gates
+ let () = I.structure back_orig
  let () = I.structure tuples
  let () = I.structure triples
  let () = I.structure quad
- let () = I.structure gate_app
+ let () = I.union gate_app1
  let () = I.structure with_qubits
  let () = I.internal "add"(int@-> returning int) add
- let () = I.internal "optimize"(final_help @-> returning final_help) optimize
-
+ let () = I.internal "optimize"(ptr void @-> returning (ptr gate_app1)) optimize1
+ 
+ 
 
 end

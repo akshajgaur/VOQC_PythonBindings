@@ -14,12 +14,12 @@ let generate dirname =
 
     (* Generate the C source file that exports OCaml functions. *)
     Format.fprintf (Format.formatter_of_out_channel c_fd)
-      "#include \"money.h\"@\n#include <stddef.h>@\n#include <stdint.h>@\n#include <unistd.h>@\n#include <gmp.h>\n%a"
+      "#include \"money.h\"@\n#include <stddef.h>@\n#include <stdint.h>@\n#include <unistd.h>@\n#include <gmp.h>@\n%a"
       (Cstubs_inverted.write_c ~prefix) stubs;
 
     (* Generate the C header file that exports OCaml functions. *)
     Format.fprintf (Format.formatter_of_out_channel h_fd)
-      "#include <stdint.h>@\n#include <stddef.h>@\n#include <unistd.h>@\n#include <gmp.h>\n%a"
+      "#include <stdint.h>@\n#include <stddef.h>@\n#include <unistd.h>@\n#include <gmp.h>@\n%a"
     (Cstubs_inverted.write_c_header ~prefix) stubs;
 
   end;
