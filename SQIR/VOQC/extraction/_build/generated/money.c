@@ -37,7 +37,7 @@ int add(int x1)
    caml_local_roots = caml__frame;;
    return x4;
 }
-union gate_app1* optimize(void* x11)
+void* optimize(void* x11)
 {
    enum { nargs = 1 };
    CAMLparam0();
@@ -45,7 +45,7 @@ union gate_app1* optimize(void* x11)
    locals[0] = CTYPES_FROM_PTR(x11);
    value x12 = functions[fn_optimize];
    value x13 = caml_callbackN(x12, nargs, locals);
-   union gate_app1* x14 = CTYPES_ADDR_OF_FATPTR(x13);
+   void* x14 = CTYPES_ADDR_OF_FATPTR(x13);
    caml_local_roots = caml__frame;;
    return x14;
 }

@@ -12,6 +12,27 @@ open NotPropagation
 open RotationMerging
 open Optimize
 open Qasm2sqir
+module CList :
+sig
+  type tem
+  val tem : tem typ  (* Used to describe interfaces to C *) 
+
+  val alloc : RzQGateSet.RzQGateSet.coq_RzQ_Unitary UnitaryListRepresentation.gate_app list -> tem
+  val free : tem -> unit
+
+  val get : tem -> RzQGateSet.RzQGateSet.coq_RzQ_Unitary UnitaryListRepresentation.gate_app list
+  val set : tem -> RzQGateSet.RzQGateSet.coq_RzQ_Unitary UnitaryListRepresentation.gate_app list -> unit
+end =
+struct
+  type tem = unit ptr
+  let tem = ptr void
+
+  let alloc = Root.create
+  let free = Root.release
+
+  let get = Root.get
+  let set = Root.set
+end
 (**Enums for RzQGateSet for Gates**)
 type t =  | URzQ_H_temp | URzQ_X_temp| URzQ_Rz_temp| URzQ_CNOT_temp [@@deriving enum]
 let of_int64 i = let Some d = of_enum (Int64.to_int i) in d
@@ -159,8 +180,9 @@ let () = seal with_qubits
 
 
 let optimize1 a = 
-Root.create (optimize((Ctypes.Root.get a: RzQGateSet.RzQGateSet.coq_RzQ_Unitary UnitaryListRepresentation.gate_app
-  list))) |> from_voidp gate_app1
+let y = CList.get a in 
+let w = (optimize y) in 
+CList.alloc w
 
 
 
@@ -176,7 +198,7 @@ module Stubs(I: Cstubs_inverted.INTERNAL) = struct
  let () = I.union gate_app1
  let () = I.structure with_qubits
  let () = I.internal "add"(int@-> returning int) add
- let () = I.internal "optimize"(ptr void @-> returning (ptr gate_app1)) optimize1
+ let () = I.internal "optimize"(CList.tem @-> returning CList.tem) optimize1
  
  
 

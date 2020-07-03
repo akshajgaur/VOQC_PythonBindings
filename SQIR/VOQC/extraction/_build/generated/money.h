@@ -27,5 +27,5 @@ union gate_app1 { struct tuples App1; struct triples App2; struct quad App3;
 struct with_qubits { union gate_app1* app_list; int qubits;  };
 
 int add(int x19);
-union gate_app1* optimize(void* x20);
+void* optimize(void* x20);
 
