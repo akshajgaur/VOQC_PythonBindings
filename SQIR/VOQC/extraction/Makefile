@@ -68,17 +68,17 @@ GENERATOR=$(BUILDDIR)/generate$(EXTEXE)
 
 all: sharedlib
 
-sharedlib: $(BUILDDIR)/libvoqc$(EXTDLL)
+sharedlib: $(BUILDDIR)/generated/libvoqc$(EXTDLL)
 
 
 ifeq ($(OSTYPE),$(filter $(OSTYPE),Win32 Cygwin))
-$(BUILDDIR)/libvoqc$(EXTDLL): $(CAML_INIT) $(LIBFILES)
+$(BUILDDIR)/generated/libvoqc$(EXTDLL): $(CAML_INIT) $(LIBFILES)
 	ocamlfind opt -o $@ -linkpkg -output-obj -verbose -package $(PACKAGES) $^
 else ifeq ($(SYSTEM),$(filter $(SYSTEM),macosx))
-$(BUILDDIR)/libvoqc$(EXTDLL): $(CAML_INIT) $(LIBFILES)
+$(BUILDDIR)/generated/libvoqc$(EXTDLL): $(CAML_INIT) $(LIBFILES)
 	ocamlfind opt -o $@ -linkpkg -runtime-variant _pic -verbose -ccopt -dynamiclib -package $(PACKAGES) $^
 else
-$(BUILDDIR)/libvoqc$(EXTDLL): $(CAML_INIT) $(LIBFILES)
+$(BUILDDIR)/generated/libvoqc$(EXTDLL): $(CAML_INIT) $(LIBFILES)
 	ocamlfind opt -o $@ -linkpkg -output-obj -runtime-variant _pic -verbose -package $(PACKAGES) $^
 endif
 

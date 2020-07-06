@@ -12,20 +12,24 @@ open NotPropagation
 open RotationMerging
 open Optimize
 open Qasm2sqir
-module CList :
+
+module Coq_U :
 sig
-  type tem
-  val tem : tem typ  (* Used to describe interfaces to C *) 
+  type t
+  val t : t typ  (* Used to describe interfaces to C *) 
 
-  val alloc : RzQGateSet.RzQGateSet.coq_RzQ_Unitary UnitaryListRepresentation.gate_app list -> tem
-  val free : tem -> unit
+  val alloc : RzQGateSet.RzQGateSet.coq_RzQ_Unitary UnitaryListRepresentation.gate_app
+  list -> t
+  val free : t -> unit
 
-  val get : tem -> RzQGateSet.RzQGateSet.coq_RzQ_Unitary UnitaryListRepresentation.gate_app list
-  val set : tem -> RzQGateSet.RzQGateSet.coq_RzQ_Unitary UnitaryListRepresentation.gate_app list -> unit
+  val get : t -> RzQGateSet.RzQGateSet.coq_RzQ_Unitary UnitaryListRepresentation.gate_app
+  list
+  val set : t -> RzQGateSet.RzQGateSet.coq_RzQ_Unitary UnitaryListRepresentation.gate_app
+  list -> unit
 end =
 struct
-  type tem = unit ptr
-  let tem = ptr void
+  type t = unit ptr
+  let t = ptr void
 
   let alloc = Root.create
   let free = Root.release
@@ -34,7 +38,7 @@ struct
   let set = Root.set
 end
 (**Enums for RzQGateSet for Gates**)
-type t =  | URzQ_H_temp | URzQ_X_temp| URzQ_Rz_temp| URzQ_CNOT_temp [@@deriving enum]
+type t =  | X | H| CNOT| Rz [@@deriving enum]
 let of_int64 i = let Some d = of_enum (Int64.to_int i) in d
 let to_int64 d = Int64.of_int (to_enum d)
 let coq_RzQ_Unitary1 = Ctypes.(typedef (view int64_t ~read:of_int64 ~write:to_int64) "enum coq_RzQ_Unitary1")
@@ -49,54 +53,24 @@ let () = seal final_gates
 let get_gates d : coq_RzQ_Unitary = 
 let w =getf d gates in
 match w with 
-URzQ_X_temp -> URzQ_X
-|URzQ_H_temp -> URzQ_H
-|URzQ_CNOT_temp -> URzQ_CNOT
-|URzQ_Rz_temp -> (URzQ_Rz (getf d type1))
-let set_gates (x:coq_RzQ_Unitary) =
+X -> URzQ_X
+|H -> URzQ_H
+|CNOT -> URzQ_CNOT
+|Rz -> (URzQ_Rz (getf d type1))
+let set_gates x =
 let d = make final_gates in
-if x = URzQ_X then 
-(setf d gates URzQ_X_temp;d)
-else if x = URzQ_H then 
-(setf d gates URzQ_H_temp;d)
-else if x = URzQ_CNOT then
-(setf d gates URzQ_CNOT_temp;d)
-else 
-(setf d gates URzQ_Rz_temp;setf d type1 (getf d type1);d)
-let coq_RzQ_Unitary = view ~read:get_gates~write:set_gates final_gates
+match x with 
+URzQ_X ->(setf d gates X;d)
+|URzQ_H ->(setf d gates H;d)
+|URzQ_CNOT -> (setf d gates CNOT;d)
+|URzQ_Rz y -> (setf d gates Rz;setf d type1 y;d)
+let coq_RzQ_Unitary2 = view ~read:get_gates~write:set_gates final_gates
 
 
-let back_orig : [`back_orig] structure typ = structure "back_orig"
-let gates1 = field back_orig "gates1" (coq_RzQ_Unitary)
-let () = seal back_orig
-let get_back d u= 
-let w =getf d gates in
-
-match w with 
-URzQ_X_temp -> (setf u gates1 URzQ_X)
-|URzQ_H_temp -> (setf u gates1 URzQ_H)
-|URzQ_CNOT_temp -> (setf u gates1 URzQ_CNOT)
-|URzQ_Rz_temp -> (setf u gates1 (URzQ_Rz(getf d type1)))
-let set_back x =
-let d = make final_gates in 
-let u = make back_orig in 
-let v =getf u gates1 in
-match v with 
- URzQ_X->(setf d gates URzQ_X_temp;d) 
-|URzQ_H->(setf d gates URzQ_H_temp;d)
-|URzQ_CNOT->(setf d gates URzQ_CNOT_temp;d)
-|URzQ_Rz _ -> (setf d gates URzQ_Rz_temp;d)
-
-let get_orig d = 
-let z =getf d gates1 in
-z
-let set_orig z =
-let d = make back_orig in (setf d gates1 z;d)
-let final_Unitary = view ~read:get_orig~write:set_orig back_orig
 
 (**App1 Tuple**)
 let tuples : [`tuples] structure typ = structure "tuples"
-let gate = field tuples "gate" (final_Unitary)
+let gate = field tuples "gate" (coq_RzQ_Unitary2)
 let x = field tuples "x" (int)
 let () = seal tuples
 
@@ -111,7 +85,7 @@ let final_App1 = view ~read:get_tuples~write:set_tuples tuples
 
 (**App2 Tuple**)
 let triples : [`triples] structure typ = structure "triples"
-let gate1 = field triples "gate1" (final_Unitary)
+let gate1 = field triples "gate1" (coq_RzQ_Unitary2)
 let a= field triples "a" (int)
 let b= field triples "b" (int)
 let () = seal triples
@@ -128,7 +102,7 @@ let final_App2 = view ~read:get_triples~write:set_triples triples
 
 (**App3 Tuple**)
 let quad : [`quad] structure typ = structure "quad"
-let gate2 = field quad "gate2" (final_Unitary)
+let gate2 = field quad "gate2" (coq_RzQ_Unitary2)
 let c= field quad "c" (int)
 let f= field quad "f" (int)
 let e= field quad "e" (int)
@@ -167,39 +141,79 @@ if xy = (getf d app1) then
 else if xy = getf d app2 then 
     (setf d app2 xy;d)
 else (setf d app3 xy;d)
+let gate_app3 = view ~read:get1_app~write:set1_app gate_app1
 
 
-let gate_app = view ~read:get1_app~write:set1_app gate_app1
-
-
-(** Tuple of Gate Application list and integer**)
 let with_qubits : [`with_qubits] structure typ = structure "with_qubits"
-let app_list = field with_qubits "app_list" (ptr gate_app)
-let quibits= field with_qubits "qubits" (int)
+let sqir = field with_qubits "SQIR" (Coq_U.t)
+let qubits= field with_qubits "qubits" (int)
 let () = seal with_qubits
+(*type with_q = 
+|L of RzQGateSet.RzQGateSet.coq_RzQ_Unitary UnitaryListRepresentation.gate_app
+  list * int
+let get_qubits d  = 
+let w =getf d sqir in
+let u = getf d qubits in
+((L (w,u)))
+let set_q ((L (w,u))) =
+let d = make with_qubits in
+(setf d sqir w;setf d qubits u;d)
+let with_qubits1 = view ~read:get_q~write:set_q with_qubits*)
+
+ 
+let optimizer a = 
+let config = to_voidp a |> Root.get in
+let y = CArray.to_list config in
+let t = (optimize y) in
+Root.create t |> from_voidp gate_app1
+
+let gate_list fname =
+let y = get_gate_list fname in 
+Root.create y |> from_voidp with_qubits
 
 
-let optimize1 a = 
-let y = CList.get a in 
-let w = (optimize y) in 
-CList.alloc w
+let write_qasm x y z = 
+let u = Coq_U.get y in
+write_qasm_file x u z
+
+let merge x = 
+let t = to_voidp x in 
+let u = Root.get t in 
+let m_rot = merge_rotations u in
+Coq_U.alloc m_rot
+
+let single x =
+let test= to_voidp x in
+let pass = Root.get test in 
+let get  = cancel_single_qubit_gates pass in 
+Root.create get |> from_voidp gate_app1
+
+let two x =
+let test= to_voidp x in
+let pass = Root.get test in 
+let get  = cancel_two_qubit_gates pass in 
+Root.create get |> from_voidp gate_app1
+
+let hadamard x =
+let test= to_voidp x in
+let pass = Root.get test in 
+let get  = hadamard_reduction pass in 
+Root.create get |> from_voidp gate_app1
 
 
-
-let add a = 
-a+3
 module Stubs(I: Cstubs_inverted.INTERNAL) = struct
- I.enum ["URzQ_H", 0L; "URzQ_X", 1L; "URzQ_Rz", 2L; "URzQ_CNOT", 3L] coq_RzQ_Unitary1
+ I.enum ["X", 0L; "H", 1L; "CNOT", 2L; "Rz", 3L] coq_RzQ_Unitary1
  let () = I.structure final_gates
- let () = I.structure back_orig
  let () = I.structure tuples
  let () = I.structure triples
  let () = I.structure quad
  let () = I.union gate_app1
  let () = I.structure with_qubits
- let () = I.internal "add"(int@-> returning int) add
- let () = I.internal "optimize"(CList.tem @-> returning CList.tem) optimize1
+ let () = I.internal "optimizer"(ptr (gate_app1) @-> returning (ptr gate_app1)) optimizer
+ let () = I.internal "write_qasm_file"(string @-> Coq_U.t @->int @-> returning void) write_qasm
+ let () = I.internal "merge_rotations"((ptr gate_app1) @-> returning Coq_U.t) merge
+ let () = I.internal "cancel_single_qubit_gates"(ptr (gate_app1) @-> returning (ptr gate_app1))single
+ let () = I.internal "cancel_two_qubit_gates"(ptr (gate_app1) @-> returning (ptr gate_app1)) two
+ let () = I.internal "hadamard"(ptr (gate_app1) @-> returning (ptr gate_app1)) hadamard
  
- 
-
 end
