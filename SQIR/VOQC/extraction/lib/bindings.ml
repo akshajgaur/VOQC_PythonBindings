@@ -38,32 +38,44 @@ struct
   let set = Root.set
 end
 (**Enums for RzQGateSet for Gates**)
-type t =  | X | H| CNOT| Rz [@@deriving enum]
-let of_int64 i = let Some d = of_enum (Int64.to_int i) in d
+type t =  |X | H| CNOT| Rz [@@deriving enum]
+let get w = 
+match w with 
+0 -> X
+|1 -> H
+|2 -> CNOT
+|3 -> Rz
+let set w = 
+match w with 
+X -> 0
+|H -> 1
+|CNOT -> 2
+|Rz -> 3
 let to_int64 d = Int64.of_int (to_enum d)
-let coq_RzQ_Unitary1 = Ctypes.(typedef (view int64_t ~read:of_int64 ~write:to_int64) "enum coq_RzQ_Unitary1")
+let coq_RzQ_Unitary1 = view ~read: get~write:set int
 
 
 (**RzQGateSet Final Structure**)
 let final_gates : [`final_gates] structure typ = structure "final_gates"
-let gates = field final_gates "gates" (coq_RzQ_Unitary1)
+let gates = field final_gates "gates" (int)
 let type1 = field final_gates "type1" (MPQ.zarith)
 let () = seal final_gates
 
 let get_gates d : coq_RzQ_Unitary = 
 let w =getf d gates in
 match w with 
-X -> URzQ_X
-|H -> URzQ_H
-|CNOT -> URzQ_CNOT
-|Rz -> (URzQ_Rz (getf d type1))
+0 -> URzQ_X
+|1 -> URzQ_H
+|2 -> URzQ_CNOT
+|3 -> (URzQ_Rz (getf d type1))
+|_ -> URzQ_X
 let set_gates x =
 let d = make final_gates in
 match x with 
-URzQ_X ->(setf d gates X;d)
-|URzQ_H ->(setf d gates H;d)
-|URzQ_CNOT -> (setf d gates CNOT;d)
-|URzQ_Rz y -> (setf d gates Rz;setf d type1 y;d)
+URzQ_X ->(setf d gates 0;d)
+|URzQ_H ->(setf d gates 1;d)
+|URzQ_CNOT -> (setf d gates 2;d)
+|URzQ_Rz y -> (setf d gates 3;setf d type1 y;d)
 let coq_RzQ_Unitary2 = view ~read:get_gates~write:set_gates final_gates
 
 
@@ -160,60 +172,81 @@ let d = make with_qubits in
 (setf d sqir w;setf d qubits u;d)
 let with_qubits1 = view ~read:get_q~write:set_q with_qubits*)
 
- 
-let optimizer a = 
-let config = to_voidp a |> Root.get in
-let y = CArray.to_list config in
-let t = (optimize y) in
-Root.create t |> from_voidp gate_app1
+
+  type internal
+  let internal : [`internal] structure typ = structure "internal"
+  let length = field internal "length" int
+  let contents = field internal "contents" (array 100 gate_app3)
+  let () = seal internal
+  
+  type mem = {
+    length   : int;
+    contents1 : RzQGateSet.RzQGateSet.coq_RzQ_Unitary UnitaryListRepresentation.gate_app
+  list; 
+  }
+
+  let of_internal_ptr p : mem =
+   let y = !@p in
+    let arr_len = getf y length in
+    let contents_list =
+      let arr_start = getf y contents |> CArray.start in
+      CArray.from_ptr arr_start arr_len |> CArray.to_list in
+    { length = arr_len; contents1 = contents_list; }
+    
+    let to_internal_ptr mem =
+    let size = (sizeof internal + mem.length * sizeof char) in
+    let internal =
+      allocate_n (abstract ~name:"" ~size ~alignment:1) 1
+      |> to_voidp |> from_voidp internal |> (!@) in
+    setf internal length mem.length;
+    List.iteri (CArray.unsafe_set (getf internal contents)) mem.contents1;
+    addr internal
+    let final9 = view ~read:of_internal_ptr ~write:to_internal_ptr (ptr internal)
+
+
+let optimizer mem = 
+let get  = optimize mem.contents1 in 
+{length= List.length get;contents1 = get}
 
 let gate_list fname =
 let y = get_gate_list fname in 
 Root.create y |> from_voidp with_qubits
 
 
-let write_qasm x y z = 
-let u = Coq_U.get y in
-write_qasm_file x u z
+let write_qasm x mem z = 
+let get  = write_qasm_file x mem.contents1 z in 
+get
 
-let merge x = 
-let t = to_voidp x in 
-let u = Root.get t in 
-let m_rot = merge_rotations u in
-Coq_U.alloc m_rot
+let merge mem = 
+let get  = merge_rotations mem.contents1 in 
+{length= List.length get;contents1 = get}
 
-let single x =
-let test= to_voidp x in
-let pass = Root.get test in 
-let get  = cancel_single_qubit_gates pass in 
-Root.create get |> from_voidp gate_app1
+let single mem=
+let get  = cancel_single_qubit_gates mem.contents1 in 
+{length= List.length get;contents1 = get}
+let two mem =
+let get  = cancel_two_qubit_gates mem.contents1 in 
+{length= List.length get;contents1 = get}
 
-let two x =
-let test= to_voidp x in
-let pass = Root.get test in 
-let get  = cancel_two_qubit_gates pass in 
-Root.create get |> from_voidp gate_app1
-
-let hadamard x =
-let test= to_voidp x in
-let pass = Root.get test in 
-let get  = hadamard_reduction pass in 
-Root.create get |> from_voidp gate_app1
+let hadamard mem =
+let get  = hadamard_reduction mem.contents1 in 
+{length= List.length get;contents1 = get}
 
 
 module Stubs(I: Cstubs_inverted.INTERNAL) = struct
- I.enum ["X", 0L; "H", 1L; "CNOT", 2L; "Rz", 3L] coq_RzQ_Unitary1
+ 
  let () = I.structure final_gates
  let () = I.structure tuples
  let () = I.structure triples
  let () = I.structure quad
  let () = I.union gate_app1
  let () = I.structure with_qubits
- let () = I.internal "optimizer"(ptr (gate_app1) @-> returning (ptr gate_app1)) optimizer
- let () = I.internal "write_qasm_file"(string @-> Coq_U.t @->int @-> returning void) write_qasm
- let () = I.internal "merge_rotations"((ptr gate_app1) @-> returning Coq_U.t) merge
- let () = I.internal "cancel_single_qubit_gates"(ptr (gate_app1) @-> returning (ptr gate_app1))single
- let () = I.internal "cancel_two_qubit_gates"(ptr (gate_app1) @-> returning (ptr gate_app1)) two
- let () = I.internal "hadamard"(ptr (gate_app1) @-> returning (ptr gate_app1)) hadamard
+ let () = I.structure internal
+ let () = I.internal "optimizer"(final9 @-> returning final9) optimizer
+ let () = I.internal "write_qasm_file"(string @-> final9 @->int @-> returning void) write_qasm
+ let () = I.internal "merge_rotations"(final9 @-> returning final9) merge
+ let () = I.internal "cancel_single_qubit_gates"(final9 @-> returning final9)single
+ let () = I.internal "cancel_two_qubit_gates"(final9 @-> returning final9) two
+ let () = I.internal "hadamard"(final9 @-> returning final9) hadamard
  
 end
