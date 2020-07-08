@@ -3,35 +3,30 @@ from ctypes import (Structure, c_char_p, c_uint, c_int,
 from enum import IntEnum
 
 
-class coq_RzQ_Unitary1(IntEnum):
-    URzQ_X = 0
-    URzQ_H = 1
-    URzQ_Rz = 2
-    URzQ_CNOT = 3
-
 
 class final_gates(Structure):
     _fields_ = [('gates', c_int), ('x', c_int)]
 
 
-class back_orig(Structure):
-    _fields_ = [('gates1', final_gates)]
-
 
 class tuples(Structure):
-    _fields_ = [('gate', back_orig), ('x', c_int)]
+    _fields_ = [('gate', final_gates), ('x', c_int)]
 
 
 class triples(Structure):
-    _fields_ = [('gate1', back_orig), ('a', c_int), ('b', c_int)]
+    _fields_ = [('gate1', final_gates), ('a', c_int), ('b', c_int)]
 
 
 class quad(Structure):
-    _fields_ = [('gate2', back_orig), ('c', c_int), ('f', c_int), ('e', c_int),]
+    _fields_ = [('gate2', final_gates), ('c', c_int), ('f', c_int), ('e', c_int)]
 
 
 class gate_app1(Union):
     _fields_ = [('App1', tuples), ('App2', triples), ('App3', quad)]
+    
+    
+class gate_app1(Structure):
+    _fields_ = [('length', int), ('contents', gate_app1 *100)]
 
 
 final1 = final_gates(2, 3)

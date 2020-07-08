@@ -12,6 +12,8 @@ type 'a name =
 | Fn_cancel_single_qubit_gates : (CI.voidp -> _ CI.fatptr) name
 | Fn_cancel_two_qubit_gates : (CI.voidp -> _ CI.fatptr) name
 | Fn_hadamard : (CI.voidp -> _ CI.fatptr) name
+| Fn_not_propagation : (CI.voidp -> _ CI.fatptr) name
+| Fn_test : (unit -> _ CI.fatptr) name
 
 external register_value : 'a name -> 'a fn -> unit =
   "money_register"
@@ -19,21 +21,51 @@ external register_value : 'a name -> 'a fn -> unit =
 let internal : type a b.
                ?runtime_lock:bool -> string -> (a -> b) Ctypes.fn -> (a -> b) -> unit =
 fun ?runtime_lock name fn f -> match fn, name with
-| Function (CI.Pointer x2, Returns (CI.Pointer _)), "optimizer" -> register_value Fn_optimizer ((
- fun x1 -> let CI.CPointer x3 = f (CI.make_ptr x2 x1) in x3))
 | Function
-    (CI.View {CI.ty = CI.Pointer x5; read = x6; _},
+    (CI.View {CI.ty = CI.Pointer x2; read = x3; _},
+     Returns (CI.View {CI.ty = CI.Pointer _; write = x4; _})), "optimizer" -> register_value Fn_optimizer ((
+ fun x1 ->
+  let CI.CPointer x6 = x4 (f (x3 (CI.make_ptr x2 x1))) in let x5 = x6 in x5))
+| Function
+    (CI.View {CI.ty = CI.Pointer x8; read = x9; _},
      Function
-       (CI.Pointer x8, Function (CI.Primitive CI.Int, Returns CI.Void))), "write_qasm_file" -> register_value Fn_write_qasm_file ((
- fun x4 x7 x9 -> f (x6 (CI.make_ptr x5 x4)) (CI.make_ptr x8 x7) x9))
-| Function (CI.Pointer x11, Returns (CI.Pointer _)), "merge_rotations" -> register_value Fn_merge_rotations ((
- fun x10 -> let CI.CPointer x12 = f (CI.make_ptr x11 x10) in x12))
-| Function (CI.Pointer x14, Returns (CI.Pointer _)), "cancel_single_qubit_gates" -> register_value Fn_cancel_single_qubit_gates ((
- fun x13 -> let CI.CPointer x15 = f (CI.make_ptr x14 x13) in x15))
-| Function (CI.Pointer x17, Returns (CI.Pointer _)), "cancel_two_qubit_gates" -> register_value Fn_cancel_two_qubit_gates ((
- fun x16 -> let CI.CPointer x18 = f (CI.make_ptr x17 x16) in x18))
-| Function (CI.Pointer x20, Returns (CI.Pointer _)), "hadamard" -> register_value Fn_hadamard ((
- fun x19 -> let CI.CPointer x21 = f (CI.make_ptr x20 x19) in x21))
+       (CI.View {CI.ty = CI.Pointer x11; read = x12; _},
+        Function (CI.Primitive CI.Int, Returns CI.Void))), "write_qasm_file" -> register_value Fn_write_qasm_file ((
+ fun x7 x10 x13 ->
+  f (x9 (CI.make_ptr x8 x7)) (x12 (CI.make_ptr x11 x10)) x13))
+| Function
+    (CI.View {CI.ty = CI.Pointer x15; read = x16; _},
+     Returns (CI.View {CI.ty = CI.Pointer _; write = x17; _})), "merge_rotations" -> register_value Fn_merge_rotations ((
+ fun x14 ->
+  let CI.CPointer x19 = x17 (f (x16 (CI.make_ptr x15 x14))) in
+  let x18 = x19 in x18))
+| Function
+    (CI.View {CI.ty = CI.Pointer x21; read = x22; _},
+     Returns (CI.View {CI.ty = CI.Pointer _; write = x23; _})), "cancel_single_qubit_gates" -> register_value Fn_cancel_single_qubit_gates ((
+ fun x20 ->
+  let CI.CPointer x25 = x23 (f (x22 (CI.make_ptr x21 x20))) in
+  let x24 = x25 in x24))
+| Function
+    (CI.View {CI.ty = CI.Pointer x27; read = x28; _},
+     Returns (CI.View {CI.ty = CI.Pointer _; write = x29; _})), "cancel_two_qubit_gates" -> register_value Fn_cancel_two_qubit_gates ((
+ fun x26 ->
+  let CI.CPointer x31 = x29 (f (x28 (CI.make_ptr x27 x26))) in
+  let x30 = x31 in x30))
+| Function
+    (CI.View {CI.ty = CI.Pointer x33; read = x34; _},
+     Returns (CI.View {CI.ty = CI.Pointer _; write = x35; _})), "hadamard" -> register_value Fn_hadamard ((
+ fun x32 ->
+  let CI.CPointer x37 = x35 (f (x34 (CI.make_ptr x33 x32))) in
+  let x36 = x37 in x36))
+| Function
+    (CI.View {CI.ty = CI.Pointer x39; read = x40; _},
+     Returns (CI.View {CI.ty = CI.Pointer _; write = x41; _})), "not_propagation" -> register_value Fn_not_propagation ((
+ fun x38 ->
+  let CI.CPointer x43 = x41 (f (x40 (CI.make_ptr x39 x38))) in
+  let x42 = x43 in x42))
+| Function
+    (CI.Void, Returns (CI.View {CI.ty = CI.Pointer _; write = x45; _})), "test" -> register_value Fn_test ((
+ fun x44 -> let CI.CPointer x47 = x45 (f x44) in let x46 = x47 in x46))
 | _ -> failwith ("Linking mismatch on name: " ^ name)
 
 let enum _ _ = () and structure _ = () and union _ = () and typedef _ _ = ()

@@ -1,27 +1,33 @@
 #include <stdio.h>
-#include "money.h"
-
+#include <money.h>
+#include <stdlib.h>
 int main(){
-  struct final_gates qa ={1,0};
-  struct tuples y= {qa,100};
-  struct triples z = {qa, 5,50};
+  struct internal *yy;
+  yy= test();
+  struct internal *tt;
+  int x = yy ->length;
+  printf("%d\n", x);
   union gate_app1 u;
-  u.App1 = y;
-  union gate_app1 t;
-  t.App2 = z;
-  union gate_app1 q[2];
-  q[0] = u;
-  q[1]=t;
-  union gate_app1 *k;
-  k =cancel_two_qubit_gates(q);
-  printf("%p\n", k);
-  struct tuples r;
-  struct triples ll;
-  ll = k[1].App2;
-  printf("%d\n",r.x);
-  struct final_gates e;
-  e = ll.gate1;
-  enum coq_RzQ_Unitary1 yt;
-  yt = e.gates;
-  printf("%d", yt);
+  union gate_app1 qa;
+  qa = yy->contents[0];
+  u = yy->contents[1];
+  struct tuples i;
+  struct triples o;
+  o = qa.App2;
+  i = u.App1;
+  struct final_gates r;
+  struct final_gates rw;
+  r = o.gate1;
+  rw = i.gate;
+  printf("%d\n", r.gates);
+  printf("%d\n", o.a);
+  printf("%d\n", o.b);
+  printf("%s\n", "Second one");
+  printf("%d\n", rw.gates);
+  printf("%d\n", i.x);
+  
+ 
+
+  
 }
+  
