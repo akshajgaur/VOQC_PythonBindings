@@ -65,18 +65,19 @@ let () = seal final_gates
 let get_gates d : coq_RzQ_Unitary = 
 let w =getf d gates in
 match w with 
-0 -> URzQ_X
-|1 -> URzQ_H
-|2 -> URzQ_CNOT
-|3 -> (URzQ_Rz (getf d type1))
-|_ -> assert false
+1 -> URzQ_X
+|2 -> URzQ_H
+|3 -> URzQ_CNOT
+|4 -> (URzQ_Rz (getf d type1))
+|_-> URzQ_X
+
 let set_gates x =
 let d = make final_gates in
 match x with 
-URzQ_X ->(setf d gates 0;d)
-|URzQ_H ->(setf d gates 1;d)
-|URzQ_CNOT -> (setf d gates 2;d)
-|URzQ_Rz y -> (setf d gates 3;setf d type1 y;d)
+URzQ_X ->(setf d gates 1;d)
+|URzQ_H ->(setf d gates 2;d)
+|URzQ_CNOT -> (setf d gates 3;d)
+|URzQ_Rz y -> (setf d gates 4;setf d type1 y;d)
 let coq_RzQ_Unitary2 = view ~read:get_gates~write:set_gates final_gates
 
 
@@ -165,6 +166,8 @@ let gate_app3 = view ~read:get1_app~write:set1_app gate_app1
 
 
 
+
+
 let with_qubits : [`with_qubits] structure typ = structure "with_qubits"
 let sqir = field with_qubits "SQIR" (Coq_U.t)
 let qubits= field with_qubits "qubits" (int)
@@ -203,6 +206,7 @@ let with_qubits1 = view ~read:get_q~write:set_q with_qubits*)
     { length = arr_len; contents1 = contents_list; }
     
     let to_internal_ptr mem =
+    let t = make internal in 
     let size = (sizeof internal + mem.length * sizeof gate_app1) in
     let internal =
       allocate_n (abstract ~name:"" ~size ~alignment:1) 1
@@ -215,11 +219,11 @@ let with_qubits1 = view ~read:get_q~write:set_q with_qubits*)
 
 let optimizer mem = 
 let get  = optimize mem.contents1 in 
-{length= List.length get;contents1 = get}
+{length= 2;contents1 = get}
 
 let not_propagation1 mem = 
 let get  = not_propagation mem.contents1 in 
-{length= List.length get;contents1 = get}
+{length= 2;contents1 = get}
 
 let gate_list fname =
 let y = get_gate_list fname in 
@@ -245,9 +249,10 @@ let hadamard mem =
 let get  = hadamard_reduction mem.contents1 in 
 {length= List.length get;contents1 = get}
 
-let test () = 
-let l = [App2(URzQ_CNOT,3,5);App1(URzQ_H,1)] in 
-{length = 2;contents1 = l}
+let test a = 
+a
+
+
 
 module Stubs(I: Cstubs_inverted.INTERNAL) = struct
  
@@ -265,5 +270,5 @@ module Stubs(I: Cstubs_inverted.INTERNAL) = struct
  let () = I.internal "cancel_two_qubit_gates"(final9 @-> returning final9) two
  let () = I.internal "hadamard"(final9 @-> returning final9) hadamard
  let () = I.internal "not_propagation"(final9 @-> returning final9) not_propagation1
- let () = I.internal "test"(void @-> returning final9) test
+ let () = I.internal "test"(final9 @->  returning final9) test
 end

@@ -24,5 +24,5 @@ struct internal* cancel_single_qubit_gates(struct internal* x72);
 struct internal* cancel_two_qubit_gates(struct internal* x73);
 struct internal* hadamard(struct internal* x74);
 struct internal* not_propagation(struct internal* x75);
-struct internal* test(void);
+struct internal* test(struct internal* x76);
 

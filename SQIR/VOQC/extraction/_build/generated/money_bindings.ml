@@ -13,7 +13,7 @@ type 'a name =
 | Fn_cancel_two_qubit_gates : (CI.voidp -> _ CI.fatptr) name
 | Fn_hadamard : (CI.voidp -> _ CI.fatptr) name
 | Fn_not_propagation : (CI.voidp -> _ CI.fatptr) name
-| Fn_test : (unit -> _ CI.fatptr) name
+| Fn_test : (CI.voidp -> _ CI.fatptr) name
 
 external register_value : 'a name -> 'a fn -> unit =
   "money_register"
@@ -64,8 +64,11 @@ fun ?runtime_lock name fn f -> match fn, name with
   let CI.CPointer x43 = x41 (f (x40 (CI.make_ptr x39 x38))) in
   let x42 = x43 in x42))
 | Function
-    (CI.Void, Returns (CI.View {CI.ty = CI.Pointer _; write = x45; _})), "test" -> register_value Fn_test ((
- fun x44 -> let CI.CPointer x47 = x45 (f x44) in let x46 = x47 in x46))
+    (CI.View {CI.ty = CI.Pointer x45; read = x46; _},
+     Returns (CI.View {CI.ty = CI.Pointer _; write = x47; _})), "test" -> register_value Fn_test ((
+ fun x44 ->
+  let CI.CPointer x49 = x47 (f (x46 (CI.make_ptr x45 x44))) in
+  let x48 = x49 in x48))
 | _ -> failwith ("Linking mismatch on name: " ^ name)
 
 let enum _ _ = () and structure _ = () and union _ = () and typedef _ _ = ()

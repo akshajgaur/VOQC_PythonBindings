@@ -12,15 +12,17 @@ int main(){
   qa = yy->contents[0];
   u = yy->contents[1];
   struct tuples i;
-  struct tuples o;
-  o = qa.App1;
+  struct triples o;
+  o = qa.App2;
   i = u.App1;
   struct final_gates r;
   struct final_gates rw;
-  r = o.gate;
+  r = o.gate1;
   rw = i.gate;
   printf("%d\n", r.gates);
-  printf("%d\n", o.x);
+  printf("%d\n", o.a);
+  printf("%d\n", o.b);
+  printf("%s\n", "Second one");
   printf("%d\n", rw.gates);
   printf("%d\n", i.x);
   
@@ -28,4 +30,3 @@ int main(){
 
   
 }
-  

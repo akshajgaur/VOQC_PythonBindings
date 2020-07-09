@@ -116,12 +116,12 @@ struct internal* not_propagation(struct internal* x51)
    caml_local_roots = caml__frame;;
    return x54;
 }
-struct internal* test(void)
+struct internal* test(struct internal* x59)
 {
    enum { nargs = 1 };
    CAMLparam0();
    CAMLlocalN(locals, nargs);
-   locals[0] = Val_unit;
+   locals[0] = CTYPES_FROM_PTR(x59);
    value x60 = functions[fn_test];
    value x61 = caml_callbackN(x60, nargs, locals);
    struct internal* x62 = CTYPES_ADDR_OF_FATPTR(x61);
