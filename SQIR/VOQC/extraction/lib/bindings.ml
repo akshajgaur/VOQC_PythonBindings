@@ -59,7 +59,7 @@ let coq_RzQ_Unitary1 = view ~read: get~write:set int
 (**RzQGateSet Final Structure**)
 let final_gates : [`final_gates] structure typ = structure "final_gates"
 let gates = field final_gates "gates" (int)
-let type1 = field final_gates "type1" (MPQ.zarith)
+let type1 = field final_gates "type1" (MPQ.t_ptr)
 let () = seal final_gates
 
 let get_gates d : coq_RzQ_Unitary = 
@@ -142,19 +142,21 @@ let d = make quad in (setf d gate2 first_quad; setf d c second_quad;setf d f thi
 let final_App3 = view ~read:get_quad~write:set_quad quad
 
 (**Gate Applications**)
-let gate_app1 : [`gate_app1] union typ = union "gate_app1"
+let gate_app1 : [`gate_app1] structure typ = structure "gate_app1"
 let app1 = field gate_app1 "App1" (final_App1)
 let app2 = field gate_app1 "App2" (final_App2)
 let app3 = field gate_app1 "App3" (final_App3)
+let ans = field gate_app1 "ans" (int)
 let () = seal gate_app1
 
+
+
 let get1_app d = 
-let p = make tuples in 
-let r = make triples in 
-let y = getf d app1 in
-let z = getf d app2 in
-let w = getf d app3 in
-if y = App1(getf p gate, getf p x) then y else if z = App2(getf r gate1, getf r a, getf r b) then z else w
+let p = getf d ans in 
+match p with 
+|1 -> (getf d app1)
+|2 -> (getf d app2)
+|3 -> (getf d app3)
 let set1_app xy =
 let d  = make gate_app1 in
 match xy with 
@@ -172,17 +174,6 @@ let with_qubits : [`with_qubits] structure typ = structure "with_qubits"
 let sqir = field with_qubits "SQIR" (Coq_U.t)
 let qubits= field with_qubits "qubits" (int)
 let () = seal with_qubits
-(*type with_q = 
-|L of RzQGateSet.RzQGateSet.coq_RzQ_Unitary UnitaryListRepresentation.gate_app
-  list * int
-let get_qubits d  = 
-let w =getf d sqir in
-let u = getf d qubits in
-((L (w,u)))
-let set_q ((L (w,u))) =
-let d = make with_qubits in
-(setf d sqir w;setf d qubits u;d)
-let with_qubits1 = view ~read:get_q~write:set_q with_qubits*)
 
 
   type internal
@@ -206,7 +197,6 @@ let with_qubits1 = view ~read:get_q~write:set_q with_qubits*)
     { length = arr_len; contents1 = contents_list; }
     
     let to_internal_ptr mem =
-    let t = make internal in 
     let size = (sizeof internal + mem.length * sizeof gate_app1) in
     let internal =
       allocate_n (abstract ~name:"" ~size ~alignment:1) 1
@@ -215,19 +205,19 @@ let with_qubits1 = view ~read:get_q~write:set_q with_qubits*)
     List.iteri (CArray.unsafe_set (getf internal contents)) mem.contents1;
     addr internal
     let final9 = view ~read:of_internal_ptr ~write:to_internal_ptr (ptr internal)
-
+let test1 () = 
+let t = make gate_app1 in 
+let y = getf t app1 in 
+{length= 3;contents1 = [y;y;y]}
 
 let optimizer mem = 
 let get  = optimize mem.contents1 in 
 {length= 2;contents1 = get}
 
-let not_propagation1 mem = 
-let get  = not_propagation mem.contents1 in 
-{length= 2;contents1 = get}
+let not_propagation1 a = 
+let get1  = not_propagation a.contents1 in 
+{length= List.length get1;contents1 = get1}
 
-let gate_list fname =
-let y = get_gate_list fname in 
-Root.create y |> from_voidp with_qubits
 
 
 let write_qasm x mem z = 
@@ -249,8 +239,12 @@ let hadamard mem =
 let get  = hadamard_reduction mem.contents1 in 
 {length= List.length get;contents1 = get}
 
+
+
 let test a = 
-a
+let t = a.contents1 @ [App2(URzQ_X, 3, 3)] in 
+{length = List.length t;contents1 = t}
+
 
 
 
@@ -260,7 +254,7 @@ module Stubs(I: Cstubs_inverted.INTERNAL) = struct
  let () = I.structure tuples
  let () = I.structure triples
  let () = I.structure quad
- let () = I.union gate_app1
+ let () = I.structure gate_app1
  let () = I.structure with_qubits
  let () = I.structure internal
  let () = I.internal "optimizer"(final9 @-> returning final9) optimizer

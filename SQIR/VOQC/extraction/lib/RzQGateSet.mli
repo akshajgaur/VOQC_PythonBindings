@@ -3,7 +3,9 @@ module RzQGateSet :
     type coq_RzQ_Unitary = URzQ_H | URzQ_X | URzQ_Rz of Q.t | URzQ_CNOT
     type coq_U = coq_RzQ_Unitary
     val match_gate : 'a -> coq_RzQ_Unitary -> coq_RzQ_Unitary -> bool
+    
   end
+
 val coq_URzQ_T : RzQGateSet.coq_RzQ_Unitary
 val coq_URzQ_P : RzQGateSet.coq_RzQ_Unitary
 val coq_URzQ_Z : RzQGateSet.coq_RzQ_Unitary
