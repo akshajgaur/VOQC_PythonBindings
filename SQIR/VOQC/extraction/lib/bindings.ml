@@ -59,7 +59,7 @@ let coq_RzQ_Unitary1 = view ~read: get~write:set int
 (**RzQGateSet Final Structure**)
 let final_gates : [`final_gates] structure typ = structure "final_gates"
 let gates = field final_gates "gates" (int)
-let type1 = field final_gates "type1" (MPQ.t_ptr)
+let type1 = field final_gates "type1" (MPQ.zarith)
 let () = seal final_gates
 
 let get_gates d : coq_RzQ_Unitary = 
@@ -220,9 +220,6 @@ let get1  = not_propagation a.contents1 in
 
 
 
-let write_qasm x mem z = 
-let get  = write_qasm_file x mem.contents1 z in 
-get
 
 let merge mem = 
 let get  = merge_rotations mem.contents1 in 
@@ -235,17 +232,50 @@ let two mem =
 let get  = cancel_two_qubit_gates mem.contents1 in 
 {length= List.length get;contents1 = get}
 
-let hadamard mem =
+ type with_quibits
+  let with_qubits : [`with_qubits] structure typ = structure "with_qubits"
+  let length = field with_qubits "length" int
+  let contents = field with_qubits "contents" (array 100 gate_app3)
+  let qubits = field with_qubits "qubits" int 
+  let () = seal with_qubits
+  
+  type gate_list = {
+    length   : int;
+    contents1 : RzQGateSet.RzQGateSet.coq_RzQ_Unitary UnitaryListRepresentation.gate_app list; 
+    qubits : int
+  }
+
+  let of_gate_list_ptr p : gate_list =
+   let y = !@p in
+    let arr_len = getf y length in
+    let num = getf y qubits in 
+    let contents_list =
+      let arr_start = getf y contents |> CArray.start in
+      CArray.from_ptr arr_start arr_len |> CArray.to_list in
+    { length = arr_len; contents1 = contents_list; qubits = num}
+    
+    let to_gate_list_ptr gate_list =
+    let size = (sizeof with_qubits + gate_list.length * sizeof gate_app1) in
+    let with_qubits =
+      allocate_n (abstract ~name:"" ~size ~alignment:1) 1
+      |> to_voidp |> from_voidp with_qubits |> (!@) in
+    setf with_qubits length gate_list.length;
+    setf with_qubits qubits gate_list.qubits;
+    List.iteri (CArray.unsafe_set (getf with_qubits contents)) gate_list.contents1;
+    addr with_qubits
+    let final_with_q = view ~read:of_gate_list_ptr ~write:to_gate_list_ptr (ptr with_qubits)
+
+let hadamard (mem:mem) =
 let get  = hadamard_reduction mem.contents1 in 
 {length= List.length get;contents1 = get}
 
+let get_gate fname = 
+let (sqir, num) = get_gate_list fname in 
+{length = List.length sqir;contents1=sqir;qubits = num}
 
+let write_qasm fname (sqir:gate_list) = 
 
-let test a = 
-let t = a.contents1 @ [App2(URzQ_X, 3, 3)] in 
-{length = List.length t;contents1 = t}
-
-
+write_qasm_file fname sqir.contents1 sqir.qubits
 
 
 module Stubs(I: Cstubs_inverted.INTERNAL) = struct
@@ -258,11 +288,11 @@ module Stubs(I: Cstubs_inverted.INTERNAL) = struct
  let () = I.structure with_qubits
  let () = I.structure internal
  let () = I.internal "optimizer"(final9 @-> returning final9) optimizer
- let () = I.internal "write_qasm_file"(string @-> final9 @->int @-> returning void) write_qasm
  let () = I.internal "merge_rotations"(final9 @-> returning final9) merge
  let () = I.internal "cancel_single_qubit_gates"(final9 @-> returning final9)single
  let () = I.internal "cancel_two_qubit_gates"(final9 @-> returning final9) two
  let () = I.internal "hadamard"(final9 @-> returning final9) hadamard
  let () = I.internal "not_propagation"(final9 @-> returning final9) not_propagation1
- let () = I.internal "test"(final9 @->  returning final9) test
+ let () = I.internal "get_gate_list"(string @-> returning final_with_q) get_gate
+let () = I.internal "write_qasm_file"(string @-> final_with_q @-> returning void) write_qasm
 end
