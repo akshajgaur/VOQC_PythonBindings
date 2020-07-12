@@ -10,13 +10,14 @@
 enum functions
 {
    fn_optimizer,
-   fn_write_qasm_file,
    fn_merge_rotations,
    fn_cancel_single_qubit_gates,
    fn_cancel_two_qubit_gates,
    fn_hadamard,
    fn_not_propagation,
-   fn_test,
+   fn_get_gate_list,
+   fn_write_qasm_file,
+   fn_voqc,
    fn_count
 };
 
@@ -31,7 +32,7 @@ value money_register(value i, value v)
   caml_register_global_root(&functions[Long_val(i)]);
   CAMLreturn (Val_unit);
 }
-struct internal* optimizer(struct internal* x1)
+struct with_qubits* optimizer(struct with_qubits* x1)
 {
    enum { nargs = 1 };
    CAMLparam0();
@@ -39,93 +40,104 @@ struct internal* optimizer(struct internal* x1)
    locals[0] = CTYPES_FROM_PTR(x1);
    value x2 = functions[fn_optimizer];
    value x3 = caml_callbackN(x2, nargs, locals);
-   struct internal* x4 = CTYPES_ADDR_OF_FATPTR(x3);
+   struct with_qubits* x4 = CTYPES_ADDR_OF_FATPTR(x3);
    caml_local_roots = caml__frame;;
    return x4;
 }
-void write_qasm_file(char* x11, struct internal* x10, int x9)
+struct with_qubits* merge_rotations(struct with_qubits* x9)
 {
-   enum { nargs = 3 };
+   enum { nargs = 1 };
    CAMLparam0();
    CAMLlocalN(locals, nargs);
-   locals[0] = CTYPES_FROM_PTR(x11);
-   locals[1] = CTYPES_FROM_PTR(x10);
-   locals[2] = Val_long(x9);
-   value x12 = functions[fn_write_qasm_file];
-   value x13 = caml_callbackN(x12, nargs, locals);
+   locals[0] = CTYPES_FROM_PTR(x9);
+   value x10 = functions[fn_merge_rotations];
+   value x11 = caml_callbackN(x10, nargs, locals);
+   struct with_qubits* x12 = CTYPES_ADDR_OF_FATPTR(x11);
+   caml_local_roots = caml__frame;;
+   return x12;
+}
+struct with_qubits* cancel_single_qubit_gates(struct with_qubits* x17)
+{
+   enum { nargs = 1 };
+   CAMLparam0();
+   CAMLlocalN(locals, nargs);
+   locals[0] = CTYPES_FROM_PTR(x17);
+   value x18 = functions[fn_cancel_single_qubit_gates];
+   value x19 = caml_callbackN(x18, nargs, locals);
+   struct with_qubits* x20 = CTYPES_ADDR_OF_FATPTR(x19);
+   caml_local_roots = caml__frame;;
+   return x20;
+}
+struct with_qubits* cancel_two_qubit_gates(struct with_qubits* x25)
+{
+   enum { nargs = 1 };
+   CAMLparam0();
+   CAMLlocalN(locals, nargs);
+   locals[0] = CTYPES_FROM_PTR(x25);
+   value x26 = functions[fn_cancel_two_qubit_gates];
+   value x27 = caml_callbackN(x26, nargs, locals);
+   struct with_qubits* x28 = CTYPES_ADDR_OF_FATPTR(x27);
+   caml_local_roots = caml__frame;;
+   return x28;
+}
+struct with_qubits* hadamard(struct with_qubits* x33)
+{
+   enum { nargs = 1 };
+   CAMLparam0();
+   CAMLlocalN(locals, nargs);
+   locals[0] = CTYPES_FROM_PTR(x33);
+   value x34 = functions[fn_hadamard];
+   value x35 = caml_callbackN(x34, nargs, locals);
+   struct with_qubits* x36 = CTYPES_ADDR_OF_FATPTR(x35);
+   caml_local_roots = caml__frame;;
+   return x36;
+}
+struct with_qubits* not_propagation(struct with_qubits* x41)
+{
+   enum { nargs = 1 };
+   CAMLparam0();
+   CAMLlocalN(locals, nargs);
+   locals[0] = CTYPES_FROM_PTR(x41);
+   value x42 = functions[fn_not_propagation];
+   value x43 = caml_callbackN(x42, nargs, locals);
+   struct with_qubits* x44 = CTYPES_ADDR_OF_FATPTR(x43);
+   caml_local_roots = caml__frame;;
+   return x44;
+}
+struct with_qubits* get_gate_list(char* x49)
+{
+   enum { nargs = 1 };
+   CAMLparam0();
+   CAMLlocalN(locals, nargs);
+   locals[0] = CTYPES_FROM_PTR(x49);
+   value x50 = functions[fn_get_gate_list];
+   value x51 = caml_callbackN(x50, nargs, locals);
+   struct with_qubits* x52 = CTYPES_ADDR_OF_FATPTR(x51);
+   caml_local_roots = caml__frame;;
+   return x52;
+}
+void write_qasm_file(char* x58, struct with_qubits* x57)
+{
+   enum { nargs = 2 };
+   CAMLparam0();
+   CAMLlocalN(locals, nargs);
+   locals[0] = CTYPES_FROM_PTR(x58);
+   locals[1] = CTYPES_FROM_PTR(x57);
+   value x59 = functions[fn_write_qasm_file];
+   value x60 = caml_callbackN(x59, nargs, locals);
    caml_local_roots = caml__frame;;
    return;
 }
-struct internal* merge_rotations(struct internal* x19)
+void voqc(char* x67, char* x66)
 {
-   enum { nargs = 1 };
+   enum { nargs = 2 };
    CAMLparam0();
    CAMLlocalN(locals, nargs);
-   locals[0] = CTYPES_FROM_PTR(x19);
-   value x20 = functions[fn_merge_rotations];
-   value x21 = caml_callbackN(x20, nargs, locals);
-   struct internal* x22 = CTYPES_ADDR_OF_FATPTR(x21);
+   locals[0] = CTYPES_FROM_PTR(x67);
+   locals[1] = CTYPES_FROM_PTR(x66);
+   value x68 = functions[fn_voqc];
+   value x69 = caml_callbackN(x68, nargs, locals);
    caml_local_roots = caml__frame;;
-   return x22;
-}
-struct internal* cancel_single_qubit_gates(struct internal* x27)
-{
-   enum { nargs = 1 };
-   CAMLparam0();
-   CAMLlocalN(locals, nargs);
-   locals[0] = CTYPES_FROM_PTR(x27);
-   value x28 = functions[fn_cancel_single_qubit_gates];
-   value x29 = caml_callbackN(x28, nargs, locals);
-   struct internal* x30 = CTYPES_ADDR_OF_FATPTR(x29);
-   caml_local_roots = caml__frame;;
-   return x30;
-}
-struct internal* cancel_two_qubit_gates(struct internal* x35)
-{
-   enum { nargs = 1 };
-   CAMLparam0();
-   CAMLlocalN(locals, nargs);
-   locals[0] = CTYPES_FROM_PTR(x35);
-   value x36 = functions[fn_cancel_two_qubit_gates];
-   value x37 = caml_callbackN(x36, nargs, locals);
-   struct internal* x38 = CTYPES_ADDR_OF_FATPTR(x37);
-   caml_local_roots = caml__frame;;
-   return x38;
-}
-struct internal* hadamard(struct internal* x43)
-{
-   enum { nargs = 1 };
-   CAMLparam0();
-   CAMLlocalN(locals, nargs);
-   locals[0] = CTYPES_FROM_PTR(x43);
-   value x44 = functions[fn_hadamard];
-   value x45 = caml_callbackN(x44, nargs, locals);
-   struct internal* x46 = CTYPES_ADDR_OF_FATPTR(x45);
-   caml_local_roots = caml__frame;;
-   return x46;
-}
-struct internal* not_propagation(struct internal* x51)
-{
-   enum { nargs = 1 };
-   CAMLparam0();
-   CAMLlocalN(locals, nargs);
-   locals[0] = CTYPES_FROM_PTR(x51);
-   value x52 = functions[fn_not_propagation];
-   value x53 = caml_callbackN(x52, nargs, locals);
-   struct internal* x54 = CTYPES_ADDR_OF_FATPTR(x53);
-   caml_local_roots = caml__frame;;
-   return x54;
-}
-struct internal* test(struct internal* x59)
-{
-   enum { nargs = 1 };
-   CAMLparam0();
-   CAMLlocalN(locals, nargs);
-   locals[0] = CTYPES_FROM_PTR(x59);
-   value x60 = functions[fn_test];
-   value x61 = caml_callbackN(x60, nargs, locals);
-   struct internal* x62 = CTYPES_ADDR_OF_FATPTR(x61);
-   caml_local_roots = caml__frame;;
-   return x62;
+   return;
 }
 

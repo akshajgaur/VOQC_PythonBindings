@@ -52,17 +52,14 @@ def format_to_c(py_list):
             temp = final_gates(gates = int_val)
             
         if sub_len == 2:
-            struct_app.ans = 1;
             tup = tuples(temp, py_list[i][1])
-            struct_app=gate_app1(App1=tup)
+            struct_app=gate_app1(App1=tup, ans =1)
         elif sub_len == 3:
-            struct_app.ans = 2
             tup = triples(temp, py_list[i][1],py_list[i][2])
-            struct_app=gate_app1(App2=tup)
+            struct_app=gate_app1(App2=tup, ans=2)
         else:
-             struct_app.ans = 3
              tup = quad(temp, py_list[i][1],py_list[i][2],py_list[i][3])
-             struct_app=gate_app1(App3=tup)
+             struct_app=gate_app1(App3=tup, ans =3)
         struct_return[i] = struct_app
     with_q = with_qubits(tot_length, struct_return, 0)
     return with_q
@@ -103,29 +100,44 @@ def get_gate_list(fname):
     testlib.get_gate_list.argtypes = [c_char_p]
     testlib.get_gate_list.restype = POINTER(with_qubits)
     final_file =str(fname).encode('utf-8')
-    print(format_from_c(testlib.get_gate_list(final_file)))
+    circ = testlib.get_gate_list(final_file)
+    q = circ.contents.qubits
+    print(format_from_c(circ), q)
 
-def optimize(fname): 
+
+def voqc(fname, out):
     testlib = CDLL('./libvoqc.so')
-    testlib.get_gate_list.argtypes = POINTER(with_qubits)
-    testlib.get_gate_list.restype = POINTER(with_qubits)
-    final_file =str(fname).encode('utf-8')
-    print(format_from_c(testlib.get_gate_list(final_file)))
-def voqc(fname):
-    testlib = CDLL('./libvoqc.so')
-    testlib.get_gate_list.argtypes = [c_char_p]
-    testlib.get_gate_list.restype = POINTER(with_qubits)
-    final_file =str(fname).encode('utf-8')
-    sqir = testlib.get_gate_list(final_file)
+    testlib.get_gate_list.argtypes = [c_char_p, c_char_p]
+    testlib.get_gate_list.restype = None
+    in_file =str(fname).encode('utf-8')
+    out_file = str(out).encode('utf-8')
+    testlib.voqc(in_file, out_file)
     
-
+def optimize(sqir):
+    testlib = CDLL('./libvoqc.so')
+    testlib.not_propagation.argtypes =[POINTER(with_qubits)]
+    testlib.not_propagation.restype =POINTER(with_qubits)
+    with_c = format_to_c(sqir)
+    print(format_from_c(testlib.not_propagation(byref(with_c))))
+    
+    
+    
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Pass a function name and then its parameters")
-    parser.add_argument("function", help="Function to be called")
-    parser.add_argument("-i", help="Function to be called")
-    args = parser.parse_args()
-    if args.function =="get_gate_list":
-        get_gate_list(args.arg1)
+    parser.add_argument("-f", "--function", help="Function to be called")
+    parser.add_argument("-i", help="Pass file to function")
+    parser.add_argument("-o", help="Name of output qasm file")
+    parser.add_argument("-s", help= "Input Sqir circut", nargs = '+')
+    args, unknown = parser.parse_known_args()
+    if args.function == 'voqc':
+        voqc(args.i,args.o)
+    elif args.function == 'get_gate_list':
+        get_gate_list(args.i)
+    elif args.function=='optimize':
+        trav_list = []
+        print(args.s)
+optimize([['X', 4], ['CNOT', 4, 5]])
+        
 
 
     

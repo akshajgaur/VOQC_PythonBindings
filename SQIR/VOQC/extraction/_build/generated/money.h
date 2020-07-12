@@ -14,16 +14,17 @@ struct gate_app1 {
   struct tuples App1; struct triples App2; struct quad App3; int ans; 
 };
 
-struct with_qubits { void* SQIR; int qubits;  };
+struct with_qubits {
+  int length; struct gate_app1 contents2[100]; int qubits; 
+};
 
-struct internal { int length; struct gate_app1 contents[100];  };
-
-struct internal* optimizer(struct internal* x67);
-void write_qasm_file(char* x70, struct internal* x69, int x68);
-struct internal* merge_rotations(struct internal* x71);
-struct internal* cancel_single_qubit_gates(struct internal* x72);
-struct internal* cancel_two_qubit_gates(struct internal* x73);
-struct internal* hadamard(struct internal* x74);
-struct internal* not_propagation(struct internal* x75);
-struct internal* test(struct internal* x76);
+struct with_qubits* optimizer(struct with_qubits* x75);
+struct with_qubits* merge_rotations(struct with_qubits* x76);
+struct with_qubits* cancel_single_qubit_gates(struct with_qubits* x77);
+struct with_qubits* cancel_two_qubit_gates(struct with_qubits* x78);
+struct with_qubits* hadamard(struct with_qubits* x79);
+struct with_qubits* not_propagation(struct with_qubits* x80);
+struct with_qubits* get_gate_list(char* x81);
+void write_qasm_file(char* x83, struct with_qubits* x82);
+void voqc(char* x85, char* x84);
 

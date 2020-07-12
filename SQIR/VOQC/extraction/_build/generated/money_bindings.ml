@@ -7,13 +7,14 @@ type 'a f = 'a CI.fn =
  | Function : 'a CI.typ * 'b f  -> ('a -> 'b) f
 type 'a name = 
 | Fn_optimizer : (CI.voidp -> _ CI.fatptr) name
-| Fn_write_qasm_file : (CI.voidp -> CI.voidp -> int -> unit) name
 | Fn_merge_rotations : (CI.voidp -> _ CI.fatptr) name
 | Fn_cancel_single_qubit_gates : (CI.voidp -> _ CI.fatptr) name
 | Fn_cancel_two_qubit_gates : (CI.voidp -> _ CI.fatptr) name
 | Fn_hadamard : (CI.voidp -> _ CI.fatptr) name
 | Fn_not_propagation : (CI.voidp -> _ CI.fatptr) name
-| Fn_test : (CI.voidp -> _ CI.fatptr) name
+| Fn_get_gate_list : (CI.voidp -> _ CI.fatptr) name
+| Fn_write_qasm_file : (CI.voidp -> CI.voidp -> unit) name
+| Fn_voqc : (CI.voidp -> CI.voidp -> unit) name
 
 external register_value : 'a name -> 'a fn -> unit =
   "money_register"
@@ -28,47 +29,50 @@ fun ?runtime_lock name fn f -> match fn, name with
   let CI.CPointer x6 = x4 (f (x3 (CI.make_ptr x2 x1))) in let x5 = x6 in x5))
 | Function
     (CI.View {CI.ty = CI.Pointer x8; read = x9; _},
+     Returns (CI.View {CI.ty = CI.Pointer _; write = x10; _})), "merge_rotations" -> register_value Fn_merge_rotations ((
+ fun x7 ->
+  let CI.CPointer x12 = x10 (f (x9 (CI.make_ptr x8 x7))) in
+  let x11 = x12 in x11))
+| Function
+    (CI.View {CI.ty = CI.Pointer x14; read = x15; _},
+     Returns (CI.View {CI.ty = CI.Pointer _; write = x16; _})), "cancel_single_qubit_gates" -> register_value Fn_cancel_single_qubit_gates ((
+ fun x13 ->
+  let CI.CPointer x18 = x16 (f (x15 (CI.make_ptr x14 x13))) in
+  let x17 = x18 in x17))
+| Function
+    (CI.View {CI.ty = CI.Pointer x20; read = x21; _},
+     Returns (CI.View {CI.ty = CI.Pointer _; write = x22; _})), "cancel_two_qubit_gates" -> register_value Fn_cancel_two_qubit_gates ((
+ fun x19 ->
+  let CI.CPointer x24 = x22 (f (x21 (CI.make_ptr x20 x19))) in
+  let x23 = x24 in x23))
+| Function
+    (CI.View {CI.ty = CI.Pointer x26; read = x27; _},
+     Returns (CI.View {CI.ty = CI.Pointer _; write = x28; _})), "hadamard" -> register_value Fn_hadamard ((
+ fun x25 ->
+  let CI.CPointer x30 = x28 (f (x27 (CI.make_ptr x26 x25))) in
+  let x29 = x30 in x29))
+| Function
+    (CI.View {CI.ty = CI.Pointer x32; read = x33; _},
+     Returns (CI.View {CI.ty = CI.Pointer _; write = x34; _})), "not_propagation" -> register_value Fn_not_propagation ((
+ fun x31 ->
+  let CI.CPointer x36 = x34 (f (x33 (CI.make_ptr x32 x31))) in
+  let x35 = x36 in x35))
+| Function
+    (CI.View {CI.ty = CI.Pointer x38; read = x39; _},
+     Returns (CI.View {CI.ty = CI.Pointer _; write = x40; _})), "get_gate_list" -> register_value Fn_get_gate_list ((
+ fun x37 ->
+  let CI.CPointer x42 = x40 (f (x39 (CI.make_ptr x38 x37))) in
+  let x41 = x42 in x41))
+| Function
+    (CI.View {CI.ty = CI.Pointer x44; read = x45; _},
      Function
-       (CI.View {CI.ty = CI.Pointer x11; read = x12; _},
-        Function (CI.Primitive CI.Int, Returns CI.Void))), "write_qasm_file" -> register_value Fn_write_qasm_file ((
- fun x7 x10 x13 ->
-  f (x9 (CI.make_ptr x8 x7)) (x12 (CI.make_ptr x11 x10)) x13))
+       (CI.View {CI.ty = CI.Pointer x47; read = x48; _}, Returns CI.Void)), "write_qasm_file" -> register_value Fn_write_qasm_file ((
+ fun x43 x46 -> f (x45 (CI.make_ptr x44 x43)) (x48 (CI.make_ptr x47 x46))))
 | Function
-    (CI.View {CI.ty = CI.Pointer x15; read = x16; _},
-     Returns (CI.View {CI.ty = CI.Pointer _; write = x17; _})), "merge_rotations" -> register_value Fn_merge_rotations ((
- fun x14 ->
-  let CI.CPointer x19 = x17 (f (x16 (CI.make_ptr x15 x14))) in
-  let x18 = x19 in x18))
-| Function
-    (CI.View {CI.ty = CI.Pointer x21; read = x22; _},
-     Returns (CI.View {CI.ty = CI.Pointer _; write = x23; _})), "cancel_single_qubit_gates" -> register_value Fn_cancel_single_qubit_gates ((
- fun x20 ->
-  let CI.CPointer x25 = x23 (f (x22 (CI.make_ptr x21 x20))) in
-  let x24 = x25 in x24))
-| Function
-    (CI.View {CI.ty = CI.Pointer x27; read = x28; _},
-     Returns (CI.View {CI.ty = CI.Pointer _; write = x29; _})), "cancel_two_qubit_gates" -> register_value Fn_cancel_two_qubit_gates ((
- fun x26 ->
-  let CI.CPointer x31 = x29 (f (x28 (CI.make_ptr x27 x26))) in
-  let x30 = x31 in x30))
-| Function
-    (CI.View {CI.ty = CI.Pointer x33; read = x34; _},
-     Returns (CI.View {CI.ty = CI.Pointer _; write = x35; _})), "hadamard" -> register_value Fn_hadamard ((
- fun x32 ->
-  let CI.CPointer x37 = x35 (f (x34 (CI.make_ptr x33 x32))) in
-  let x36 = x37 in x36))
-| Function
-    (CI.View {CI.ty = CI.Pointer x39; read = x40; _},
-     Returns (CI.View {CI.ty = CI.Pointer _; write = x41; _})), "not_propagation" -> register_value Fn_not_propagation ((
- fun x38 ->
-  let CI.CPointer x43 = x41 (f (x40 (CI.make_ptr x39 x38))) in
-  let x42 = x43 in x42))
-| Function
-    (CI.View {CI.ty = CI.Pointer x45; read = x46; _},
-     Returns (CI.View {CI.ty = CI.Pointer _; write = x47; _})), "test" -> register_value Fn_test ((
- fun x44 ->
-  let CI.CPointer x49 = x47 (f (x46 (CI.make_ptr x45 x44))) in
-  let x48 = x49 in x48))
+    (CI.View {CI.ty = CI.Pointer x50; read = x51; _},
+     Function
+       (CI.View {CI.ty = CI.Pointer x53; read = x54; _}, Returns CI.Void)), "voqc" -> register_value Fn_voqc ((
+ fun x49 x52 -> f (x51 (CI.make_ptr x50 x49)) (x54 (CI.make_ptr x53 x52))))
 | _ -> failwith ("Linking mismatch on name: " ^ name)
 
 let enum _ _ = () and structure _ = () and union _ = () and typedef _ _ = ()
