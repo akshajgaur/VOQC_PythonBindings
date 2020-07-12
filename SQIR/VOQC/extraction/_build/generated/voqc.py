@@ -1,6 +1,5 @@
 from ctypes import *
-from enum import IntEnum
-import os
+import argparse
 
 
 
@@ -53,12 +52,15 @@ def format_to_c(py_list):
             temp = final_gates(gates = int_val)
             
         if sub_len == 2:
+            struct_app.ans = 1;
             tup = tuples(temp, py_list[i][1])
             struct_app=gate_app1(App1=tup)
         elif sub_len == 3:
+            struct_app.ans = 2
             tup = triples(temp, py_list[i][1],py_list[i][2])
             struct_app=gate_app1(App2=tup)
         else:
+             struct_app.ans = 3
              tup = quad(temp, py_list[i][1],py_list[i][2],py_list[i][3])
              struct_app=gate_app1(App3=tup)
         struct_return[i] = struct_app
@@ -96,14 +98,38 @@ def format_from_c(y):
         
         
     return return_list
+def get_gate_list(fname): 
+    testlib = CDLL('./libvoqc.so')
+    testlib.get_gate_list.argtypes = [c_char_p]
+    testlib.get_gate_list.restype = POINTER(with_qubits)
+    final_file =str(fname).encode('utf-8')
+    print(format_from_c(testlib.get_gate_list(final_file)))
 
-testlib = CDLL('./libvoqc.so')
-testlib.get_gate_list.argtypes = [c_char_p]
-testlib.get_gate_list.restype = POINTER(with_qubits)
-print(format_from_c(testlib.get_gate_list(b"tof_3.qasm")))
+def optimize(fname): 
+    testlib = CDLL('./libvoqc.so')
+    testlib.get_gate_list.argtypes = POINTER(with_qubits)
+    testlib.get_gate_list.restype = POINTER(with_qubits)
+    final_file =str(fname).encode('utf-8')
+    print(format_from_c(testlib.get_gate_list(final_file)))
+def voqc(fname):
+    testlib = CDLL('./libvoqc.so')
+    testlib.get_gate_list.argtypes = [c_char_p]
+    testlib.get_gate_list.restype = POINTER(with_qubits)
+    final_file =str(fname).encode('utf-8')
+    sqir = testlib.get_gate_list(final_file)
+    
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Pass a function name and then its parameters")
+    parser.add_argument("function", help="Function to be called")
+    parser.add_argument("-i", help="Function to be called")
+    args = parser.parse_args()
+    if args.function =="get_gate_list":
+        get_gate_list(args.arg1)
+
 
     
-           
+
 
     
     
