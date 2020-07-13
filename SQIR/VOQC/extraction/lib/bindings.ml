@@ -13,30 +13,7 @@ open RotationMerging
 open Optimize
 open Qasm2sqir
 
-module Coq_U :
-sig
-  type t
-  val t : t typ  (* Used to describe interfaces to C *) 
 
-  val alloc : RzQGateSet.RzQGateSet.coq_RzQ_Unitary UnitaryListRepresentation.gate_app
-  list -> t
-  val free : t -> unit
-
-  val get : t -> RzQGateSet.RzQGateSet.coq_RzQ_Unitary UnitaryListRepresentation.gate_app
-  list
-  val set : t -> RzQGateSet.RzQGateSet.coq_RzQ_Unitary UnitaryListRepresentation.gate_app
-  list -> unit
-end =
-struct
-  type t = unit ptr
-  let t = ptr void
-
-  let alloc = Root.create
-  let free = Root.release
-
-  let get = Root.get
-  let set = Root.set
-end
 (**Enums for RzQGateSet for Gates**)
 type t =  |X | H| CNOT| Rz [@@deriving enum]
 let get w = 
@@ -55,15 +32,29 @@ X -> 1
 let to_int64 d = Int64.of_int (to_enum d)
 let coq_RzQ_Unitary1 = view ~read: get~write:set int
 
+let rational : [`rational] structure typ = structure "rational"
+let num = field rational "num" (int)
+let den = field rational "den" (int)
+let () = seal rational
+let get_rational d =
+  let n = getf d num in
+  let q = getf d den in
+  Q.make (Z.of_int n) (Z.of_int q)
+let set_rational x =
+  let d = make rational in
+  (setf d num (Z.to_int(Q.num x));setf d den (Z.to_int(Q.den x));d)
+let rat = view~read:get_rational~write:set_rational (rational)
 
+
+    
 (**RzQGateSet Final Structure**)
 let final_gates : [`final_gates] structure typ = structure "final_gates"
 let gates = field final_gates "gates" (int)
-let type1 = field final_gates "type1" (MPQ.zarith)
+let type1 = field final_gates "type1" (rat)
 let () = seal final_gates
 
 let get_gates d : coq_RzQ_Unitary = 
-let w =getf d gates in
+  let w =getf d gates in
 match w with 
 1 -> URzQ_X
 |2 -> URzQ_H
@@ -72,7 +63,7 @@ match w with
 |_-> URzQ_X
 
 let set_gates x =
-let d = make final_gates in
+  let d = make final_gates in 
 match x with 
 URzQ_X ->(setf d gates 1;d)
 |URzQ_H ->(setf d gates 2;d)
@@ -166,76 +157,10 @@ match xy with
 let gate_app3 = view ~read:get1_app~write:set1_app gate_app1
 
 
-
-
-
-
-let with_qubits : [`with_qubits] structure typ = structure "with_qubits"
-let sqir = field with_qubits "SQIR" (Coq_U.t)
-let qubits= field with_qubits "qubits" (int)
-let () = seal with_qubits
-
-
-  type internal
-  let internal : [`internal] structure typ = structure "internal"
-  let length = field internal "length" int
-  let contents = field internal "contents" (array 100 gate_app3)
-  let () = seal internal
-  
-  type mem = {
-    length   : int;
-    contents1 : RzQGateSet.RzQGateSet.coq_RzQ_Unitary UnitaryListRepresentation.gate_app
-  list; 
-  }
-
-  let of_internal_ptr p : mem =
-   let y = !@p in
-    let arr_len = getf y length in
-    let contents_list =
-      let arr_start = getf y contents |> CArray.start in
-      CArray.from_ptr arr_start arr_len |> CArray.to_list in
-    { length = arr_len; contents1 = contents_list; }
-    
-    let to_internal_ptr mem =
-    let size = (sizeof internal + mem.length * sizeof gate_app1) in
-    let internal =
-      allocate_n (abstract ~name:"" ~size ~alignment:1) 1
-      |> to_voidp |> from_voidp internal |> (!@) in
-    setf internal length mem.length;
-    List.iteri (CArray.unsafe_set (getf internal contents)) mem.contents1;
-    addr internal
-    let final9 = view ~read:of_internal_ptr ~write:to_internal_ptr (ptr internal)
-let test1 () = 
-let t = make gate_app1 in 
-let y = getf t app1 in 
-{length= 3;contents1 = [y;y;y]}
-
-let optimizer mem = 
-let get  = optimize mem.contents1 in 
-{length= 2;contents1 = get}
-
-let not_propagation1 a = 
-let get1  = not_propagation a.contents1 in 
-{length= List.length get1;contents1 = get1}
-
-
-
-
-let merge mem = 
-let get  = merge_rotations mem.contents1 in 
-{length= List.length get;contents1 = get}
-
-let single mem=
-let get  = cancel_single_qubit_gates mem.contents1 in 
-{length= List.length get;contents1 = get}
-let two mem =
-let get  = cancel_two_qubit_gates mem.contents1 in 
-{length= List.length get;contents1 = get}
-
- type with_quibits
+type with_quibits
   let with_qubits : [`with_qubits] structure typ = structure "with_qubits"
   let length = field with_qubits "length" int
-  let contents = field with_qubits "contents" (array 100 gate_app3)
+  let contents = field with_qubits "contents2" (array 100 gate_app3)
   let qubits = field with_qubits "qubits" int 
   let () = seal with_qubits
   
@@ -265,9 +190,31 @@ let get  = cancel_two_qubit_gates mem.contents1 in
     addr with_qubits
     let final_with_q = view ~read:of_gate_list_ptr ~write:to_gate_list_ptr (ptr with_qubits)
 
-let hadamard (mem:mem) =
+let optimizer mem = 
+let get  = optimize mem.contents1 in 
+{length= List.length get;contents1 = get;qubits =0}
+
+let not_propagation1 a = 
+let get1  = not_propagation a.contents1 in 
+{length= List.length get1;contents1 = get1;qubits=0}
+
+
+let merge mem = 
+let get  = merge_rotations mem.contents1 in 
+{length= List.length get;contents1 = get;qubits = 0}
+
+let single mem=
+let get  = cancel_single_qubit_gates mem.contents1 in 
+{length= List.length get;contents1 = get;qubits =0}
+let two mem =
+let get  = cancel_two_qubit_gates mem.contents1 in 
+{length= List.length get;contents1 = get;qubits=0}
+
+ 
+
+let hadamard mem =
 let get  = hadamard_reduction mem.contents1 in 
-{length= List.length get;contents1 = get}
+{length= List.length get;contents1 = get;qubits=0}
 
 let get_gate fname = 
 let (sqir, num) = get_gate_list fname in 
@@ -277,22 +224,26 @@ let write_qasm fname (sqir:gate_list) =
 
 write_qasm_file fname sqir.contents1 sqir.qubits
 
+let voqc fname out =
+  let (sqir, q) = get_gate_list fname in
+  let af_optim = optimize sqir in
+  write_qasm_file out af_optim q
 
 module Stubs(I: Cstubs_inverted.INTERNAL) = struct
- 
+ let () = I.structure rational
  let () = I.structure final_gates
  let () = I.structure tuples
  let () = I.structure triples
  let () = I.structure quad
  let () = I.structure gate_app1
  let () = I.structure with_qubits
- let () = I.structure internal
- let () = I.internal "optimizer"(final9 @-> returning final9) optimizer
- let () = I.internal "merge_rotations"(final9 @-> returning final9) merge
- let () = I.internal "cancel_single_qubit_gates"(final9 @-> returning final9)single
- let () = I.internal "cancel_two_qubit_gates"(final9 @-> returning final9) two
- let () = I.internal "hadamard"(final9 @-> returning final9) hadamard
- let () = I.internal "not_propagation"(final9 @-> returning final9) not_propagation1
+ let () = I.internal "optimizer"(final_with_q @-> returning final_with_q) optimizer
+ let () = I.internal "merge_rotations"(final_with_q @-> returning final_with_q) merge
+ let () = I.internal "cancel_single_qubit_gates"(final_with_q @-> returning final_with_q)single
+ let () = I.internal "cancel_two_qubit_gates"(final_with_q @-> returning final_with_q) two
+ let () = I.internal "hadamard"(final_with_q @-> returning final_with_q) hadamard
+ let () = I.internal "not_propagation"(final_with_q @-> returning final_with_q) not_propagation1
  let () = I.internal "get_gate_list"(string @-> returning final_with_q) get_gate
-let () = I.internal "write_qasm_file"(string @-> final_with_q @-> returning void) write_qasm
+ let () = I.internal "write_qasm_file"(string @-> final_with_q @-> returning void) write_qasm
+ let () = I.internal "voqc" (string @-> string @-> returning void) voqc
 end
