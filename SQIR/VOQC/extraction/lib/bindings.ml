@@ -160,7 +160,7 @@ let gate_app3 = view ~read:get1_app~write:set1_app gate_app1
 type with_quibits
   let with_qubits : [`with_qubits] structure typ = structure "with_qubits"
   let length = field with_qubits "length" int
-  let contents = field with_qubits "contents2" (array 100 gate_app3)
+  let contents = field with_qubits "contents2" (array 1000 gate_app3)
   let qubits = field with_qubits "qubits" int 
   let () = seal with_qubits
   
@@ -192,29 +192,29 @@ type with_quibits
 
 let optimizer mem = 
 let get  = optimize mem.contents1 in 
-{length= List.length get;contents1 = get;qubits =0}
+{length= List.length get;contents1 = get;qubits =mem.qubits}
 
 let not_propagation1 a = 
 let get1  = not_propagation a.contents1 in 
-{length= List.length get1;contents1 = get1;qubits=0}
+{length= List.length get1;contents1 = get1;qubits=a.qubits}
 
 
 let merge mem = 
 let get  = merge_rotations mem.contents1 in 
-{length= List.length get;contents1 = get;qubits = 0}
+{length= List.length get;contents1 = get;qubits = mem.qubits}
 
 let single mem=
 let get  = cancel_single_qubit_gates mem.contents1 in 
-{length= List.length get;contents1 = get;qubits =0}
+{length= List.length get;contents1 = get;qubits =mem.qubits}
 let two mem =
 let get  = cancel_two_qubit_gates mem.contents1 in 
-{length= List.length get;contents1 = get;qubits=0}
+{length= List.length get;contents1 = get;qubits=mem.qubits}
 
  
 
 let hadamard mem =
 let get  = hadamard_reduction mem.contents1 in 
-{length= List.length get;contents1 = get;qubits=0}
+{length= List.length get;contents1 = get;qubits=mem.qubits}
 
 let get_gate fname = 
 let (sqir, num) = get_gate_list fname in 
