@@ -119,7 +119,8 @@ class SQIR:
         testlib.optimizer.restype =POINTER(with_qubits)
         t = format_from_c(self.circ)
         y = format_to_c(t, self.circ.contents.qubits)
-        return testlib.optimizer(y)
+        self.circ = testlib.optimizer(byref(y))
+        return self
 
     def not_propagation(self):
         testlib = CDLL('./libvoqc.so')
@@ -127,7 +128,8 @@ class SQIR:
         testlib.not_propagation.restype =POINTER(with_qubits)
         t = format_from_c(self.circ)
         y = format_to_c(t, self.circ.contents.qubits)
-        return testlib.not_propagation(y)
+        self.circ =testlib.not_propagation(byref(y))
+        return self
 
     def hadamard_reduction(self):
         testlib = CDLL('./libvoqc.so')
@@ -135,7 +137,8 @@ class SQIR:
         testlib.hadamard.restype =POINTER(with_qubits)
         t = format_from_c(self.circ)
         y = format_to_c(t, self.circ.contents.qubits)
-        return testlib.hadamard(y)
+        self.circ =testlib.hadamard(byref(y))
+        return self
 
     def cancel_two_qubit_gates(self):
         testlib = CDLL('./libvoqc.so')
@@ -143,7 +146,8 @@ class SQIR:
         testlib.cancel_two_qubit_gates.restype =POINTER(with_qubits)
         t = format_from_c(self.circ)
         y = format_to_c(t, self.circ.contents.qubits)
-        return testlib.cancel_two_qubit_gates(y)
+        self.circ =testlib.cancel_two_qubit_gates(byref(y))
+        return self
 
     def merge_rotations(self):
         testlib = CDLL('./libvoqc.so')
@@ -151,7 +155,8 @@ class SQIR:
         testlib.merge_rotations.restype =POINTER(with_qubits)
         t = format_from_c(self.circ)
         y = format_to_c(t, self.circ.contents.qubits)
-        return testlib.merge_rotations(y)
+        self.circ =testlib.merge_rotation(byref(y))
+        return self
     
     def cancel_single_qubit_gates(fname):
         testlib = CDLL('./libvoqc.so')
@@ -159,7 +164,8 @@ class SQIR:
         testlib.cancel_single_qubit_gates.restype =POINTER(with_qubits)
         t = format_from_c(self.circ)
         y = format_to_c(t, self.circ.contents.qubits)
-        return testlib.cancel_single_qubit_gates(y)
+        self.circ =testlib.cancel_single_qubit_gates(byref(y))
+        return self
     
     def write(self, fname):
         testlib = CDLL('./libvoqc.so')
@@ -181,3 +187,4 @@ def load(fname):
 
 
     
+
