@@ -45,7 +45,7 @@ def convert_gates(x):
         num = int(x[3])
         den = int(x[5])
     return y, num, den
-def format_to_c(py_list,q):
+def format_to_c(py_list, q):
     struct_return = GATE_APP()
     struct_app = gate_app1()
     tot_length = len(py_list)
@@ -98,20 +98,6 @@ def format_from_c(y):
             return_list.append(sub_list)
         
     return return_list
-def get_gate_list(fname, out): 
-    testlib = CDLL('./libvoqc.so')
-    testlib.get_gate_list.argtypes = [c_char_p]
-    testlib.get_gate_list.restype = POINTER(with_qubits)
-    final_file =str(fname).encode('utf-8')
-    circ = testlib.get_gate_list(final_file)
-    q = circ.contents.qubits
-    temp = format_from_c(circ)
-    with open(out+'.txt', 'w') as f:
-        for item in temp:
-            f.write("%s\n" % item)
-        f.write("%s\n" % q)
-        
-    print(format_from_c(circ), q)
 
 
 def voqc(fname, out):
@@ -122,210 +108,76 @@ def voqc(fname, out):
     out_file = str(out).encode('utf-8')
     testlib.voqc(in_file, out_file)
     
-def optimize(fname, out):
-    to_py = []
-    get_q = []
-    input1 = open(fname +'.txt')
-    for i in (input1.readlines()):
-        to_py.append(i)
-    new_py = []
-    new_py = [x[:-1] for x in to_py]
-    fin_py = []
-    for i in range(len(new_py)):
-        if new_py[i]!= ' ':
-            fin_py.append(ast.literal_eval(new_py[i]))
-    q = int(fin_py.pop())
-    testlib = CDLL('./libvoqc.so')
-    testlib.optimizer.argtypes =[POINTER(with_qubits)]
-    testlib.optimizer.restype =POINTER(with_qubits)
-    with_c = format_to_c(fin_py, q)
-    temp = format_from_c(testlib.optimizer(byref(with_c)))
-    with open(out+ '.txt', 'w') as f:
-        for item in temp:
-            f.write("%s\n" % item)
-        f.write("%d\n" % q)
-    print(temp)
-def optimize(fname, out):
-    to_py = []
-    get_q = []
-    input1 = open(fname +'.txt')
-    for i in (input1.readlines()):
-        to_py.append(i)
-    new_py = []
-    new_py = [x[:-1] for x in to_py]
-    fin_py = []
-    for i in range(len(new_py)):
-        if new_py[i]!= ' ':
-            fin_py.append(ast.literal_eval(new_py[i]))
-    q = int(fin_py.pop())
-    testlib = CDLL('./libvoqc.so')
-    testlib.optimizer.argtypes =[POINTER(with_qubits)]
-    testlib.optimizer.restype =POINTER(with_qubits)
-    with_c = format_to_c(fin_py, q)
-    temp = format_from_c(testlib.optimizer(byref(with_c)))
-    with open(out+ '.txt', 'w') as f:
-        for item in temp:
-            f.write("%s\n" % item)
-        f.write("%d\n" % q)
-    print(temp)
-def np(fname, out):
-    to_py = []
-    get_q = []
-    input1 = open(fname +'.txt')
-    for i in (input1.readlines()):
-        to_py.append(i)
-    new_py = []
-    new_py = [x[:-1] for x in to_py]
-    fin_py = []
-    for i in range(len(new_py)):
-        if new_py[i]!= ' ':
-            fin_py.append(ast.literal_eval(new_py[i]))
-    q = int(fin_py.pop())
-    testlib = CDLL('./libvoqc.so')
-    testlib.not_propagation.argtypes =[POINTER(with_qubits)]
-    testlib.not_propagation.restype =POINTER(with_qubits)
-    with_c = format_to_c(fin_py, q)
-    temp = format_from_c(testlib.not_propagation(byref(with_c)))
-    with open(out+ '.txt', 'w') as f:
-        for item in temp:
-            f.write("%s\n" % item)
-        f.write("%d\n" % q)
-    print(temp)
-def single(fname, out):
-    to_py = []
-    get_q = []
-    input1 = open(fname +'.txt')
-    for i in (input1.readlines()):
-        to_py.append(i)
-    new_py = []
-    new_py = [x[:-1] for x in to_py]
-    fin_py = []
-    for i in range(len(new_py)):
-        if new_py[i]!= ' ':
-            fin_py.append(ast.literal_eval(new_py[i]))
-    q = int(fin_py.pop())
-    testlib = CDLL('./libvoqc.so')
-    testlib.cancel_single_qubit_gates.argtypes =[POINTER(with_qubits)]
-    testlib.cancel_single_qubit_gates.restype =POINTER(with_qubits)
-    with_c = format_to_c(fin_py, q)
-    temp = format_from_c(testlib.cancel_single_qubit_gates(byref(with_c)))
-    with open(out+ '.txt', 'w') as f:
-        for item in temp:
-            f.write("%s\n" % item)
-        f.write("%d\n" % q)
-    print(temp)
-def two(fname, out):
-    to_py = []
-    get_q = []
-    input1 = open(fname +'.txt')
-    for i in (input1.readlines()):
-        to_py.append(i)
-    new_py = []
-    new_py = [x[:-1] for x in to_py]
-    fin_py = []
-    for i in range(len(new_py)):
-        if new_py[i]!= ' ':
-            fin_py.append(ast.literal_eval(new_py[i]))
-    q = int(fin_py.pop())
-    testlib = CDLL('./libvoqc.so')
-    testlib.cancel_two_qubit_gates.argtypes =[POINTER(with_qubits)]
-    testlib.cancel_two_qubit_gates.restype =POINTER(with_qubits)
-    with_c = format_to_c(fin_py, q)
-    temp = format_from_c(testlib.cancel_two_qubit_gates(byref(with_c)))
-    with open(out+ '.txt', 'w') as f:
-        for item in temp:
-            f.write("%s\n" % item)
-        f.write("%d\n" % q)
-    print(temp)
-def mr(fname, out):
-    to_py = []
-    get_q = []
-    input1 = open(fname +'.txt')
-    for i in (input1.readlines()):
-        to_py.append(i)
-    new_py = []
-    new_py = [x[:-1] for x in to_py]
-    fin_py = []
-    for i in range(len(new_py)):
-        if new_py[i]!= ' ':
-            fin_py.append(ast.literal_eval(new_py[i]))
-    q = int(fin_py.pop())
-    testlib = CDLL('./libvoqc.so')
-    testlib.merge_rotations.argtypes =[POINTER(with_qubits)]
-    testlib.merge_rotations.restype =POINTER(with_qubits)
-    with_c = format_to_c(fin_py, q)
-    temp = format_from_c(testlib.merge_rotations(byref(with_c)))
-    with open(out+ '.txt', 'w') as f:
-        for item in temp:
-            f.write("%s\n" % item)
-        f.write("%d\n" % q)
-    print(temp)
-def hr(fname, out):
-    to_py = []
-    get_q = []
-    input1 = open(fname +'.txt')
-    for i in (input1.readlines()):
-        to_py.append(i)
-    new_py = []
-    new_py = [x[:-1] for x in to_py]
-    fin_py = []
-    for i in range(len(new_py)):
-        if new_py[i]!= ' ':
-            fin_py.append(ast.literal_eval(new_py[i]))
-    q = int(fin_py.pop())
-    testlib = CDLL('./libvoqc.so')
-    testlib.hadamard.argtypes =[POINTER(with_qubits)]
-    testlib.hadamard.restype =POINTER(with_qubits)
-    with_c = format_to_c(fin_py, q)
-    temp = format_from_c(testlib.hadamard(byref(with_c)))
-    with open(out+ '.txt', 'w') as f:
-        for item in temp:
-            f.write("%s\n" % item)
-        f.write("%d\n" % q)
-    print(temp)
+
+
+class SQIR:
+    def __init__(self, circ):
+        self.circ = circ
+    def optimize(self):
+        testlib = CDLL('./libvoqc.so')
+        testlib.optimizer.argtypes =[POINTER(with_qubits)]
+        testlib.optimizer.restype =POINTER(with_qubits)
+        t = format_from_c(self.circ)
+        y = format_to_c(t, self.circ.contents.qubits)
+        return testlib.optimizer(y)
+
+    def not_propagation(self):
+        testlib = CDLL('./libvoqc.so')
+        testlib.not_propagation.argtypes =[POINTER(with_qubits)]
+        testlib.not_propagation.restype =POINTER(with_qubits)
+        t = format_from_c(self.circ)
+        y = format_to_c(t, self.circ.contents.qubits)
+        return testlib.not_propagation(y)
+
+    def hadamard_reduction(self):
+        testlib = CDLL('./libvoqc.so')
+        testlib.hadamard.argtypes =[POINTER(with_qubits)]
+        testlib.hadamard.restype =POINTER(with_qubits)
+        t = format_from_c(self.circ)
+        y = format_to_c(t, self.circ.contents.qubits)
+        return testlib.hadamard(y)
+
+    def cancel_two_qubit_gates(self):
+        testlib = CDLL('./libvoqc.so')
+        testlib.cancel_two_qubit_gates.argtypes =[POINTER(with_qubits)]
+        testlib.cancel_two_qubit_gates.restype =POINTER(with_qubits)
+        t = format_from_c(self.circ)
+        y = format_to_c(t, self.circ.contents.qubits)
+        return testlib.cancel_two_qubit_gates(y)
+
+    def merge_rotations(self):
+        testlib = CDLL('./libvoqc.so')
+        testlib.merge_rotations.argtypes =[POINTER(with_qubits)]
+        testlib.merge_rotations.restype =POINTER(with_qubits)
+        t = format_from_c(self.circ)
+        y = format_to_c(t, self.circ.contents.qubits)
+        return testlib.merge_rotations(y)
     
-def write_qasm_file(out, fname):
-    to_py = []
-    input1 = open(out +'.txt')
-    for i in (input1.readlines()):
-        to_py.append(i)
-    new_py = []
-    new_py = [x[:-1] for x in to_py]
-    fin_py = []
-    for i in range(len(new_py)):
-        if new_py[i]!= ' ':
-            fin_py.append(ast.literal_eval(new_py[i]))
-    q = int(fin_py.pop())
-    testlib = CDLL('./libvoqc.so')
-    testlib.write_qasm_file.argtypes =[c_char_p, POINTER(with_qubits)]
-    testlib.write_qasm_file.restype =None
-    with_c = format_to_c(fin_py,q)
-    out_file = str(fname).encode('utf-8')
-    testlib.write_qasm_file(out_file,byref(with_c))
+    def cancel_single_qubit_gates(fname):
+        testlib = CDLL('./libvoqc.so')
+        testlib.cancel_single_qubit_gates.argtypes =[POINTER(with_qubits)]
+        testlib.cancel_single_qubit_gates.restype =POINTER(with_qubits)
+        t = format_from_c(self.circ)
+        y = format_to_c(t, self.circ.contents.qubits)
+        return testlib.cancel_single_qubit_gates(y)
     
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Pass a function name and then its parameters")
-    parser.add_argument("-f", "--function", help="Function to be called")
-    parser.add_argument("-i", help="Pass file to function")
-    parser.add_argument("-o", help="Name of output qasm file")
-    args, unknown = parser.parse_known_args()
-    if args.function == 'voqc':
-        voqc(args.i,args.o)
-    elif args.function == 'get_gate_list':
-        get_gate_list(args.i, args.o)
-    elif args.function=='optimize':
-        optimize(args.i, args.o)
-    elif args.function == 'write_qasm_file':
-        write_qasm_file(args.i, args.o)
-    elif args.function == 'not_propagation':
-        np(args.i, args.o)
-    elif args.function == 'cancel_single_qubit_gates':
-        single(args.i, args.o)
-    elif args.function == 'cancel_two_qubit_gates':
-        two(args.i, args.o)
-    elif args.function == 'merge_rotations':
-        mr(args.i, args.o)
-    elif args.function == 'hadamard_reductions':
-        hr(args.i, args.o)
-    else:
-        "Input a valid function"
+    def write(self, fname):
+        testlib = CDLL('./libvoqc.so')
+        testlib.write_qasm_file.argtypes =[c_char_p, POINTER(with_qubits)]
+        testlib.write_qasm_file.restype =None
+        out_file = str(fname).encode('utf-8')
+        t = format_from_c(self.circ)
+        q = self.circ.contents.qubits
+        y = format_to_c(t, q)
+        testlib.write_qasm_file(out_file,byref(y))
+
+def load(fname): 
+    testlib = CDLL('./libvoqc.so')
+    testlib.get_gate_list.argtypes = [c_char_p]
+    testlib.get_gate_list.restype = POINTER(with_qubits)
+    final_file =str(fname).encode('utf-8')
+    circ = testlib.get_gate_list(final_file)
+    return SQIR(circ)
+
+
+    
